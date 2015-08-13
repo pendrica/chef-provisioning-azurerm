@@ -1,0 +1,1 @@
+require 'chef/provisioning/azurerm'

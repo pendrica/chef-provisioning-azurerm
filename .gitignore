@@ -1,0 +1,4 @@
+*.gem
+/nodes
+/docs/examples
+/provision/recipes
