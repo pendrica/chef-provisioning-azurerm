@@ -1,6 +1,10 @@
 # chef-provisioning-azurerm
 
-```chef-provisioning-azurerm``` is a driver for **chef-provisioning** that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API.
+```chef-provisioning-azurerm``` is a driver for [chef-provisioning](https://github.com/chef/chef-provisioning) that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API.
+
+At the moment, the primary use case is to provide a way to deploy Azure Resource Manager templates using Chef as well as provide an automatic means to install and register the Chef client on these machine via the use of the Chef VM Extensions for Azure.
+
+![build status](https://travis-ci.org/pendrica/chef-provisioning-azurerm.svg?branch=master)
 
 **Note:** If you are looking for a driver that works with the existing Microsoft Azure Service Management API please visit [chef-provisioning-azure](https://github.com/chef/chef-provisioning-azure)
 
@@ -46,19 +50,19 @@ To work around the issue of storing chef-provisioning driver info in the Chef se
 
 The following resources are provided: 
 
-### azure_resource_group
-### azure_storage_account
-### azure_resource_template
+- azure_resource_group
+- azure_storage_account
+- azure_resource_template
 
 The following resources are planned:
 
-### azure_virtual_network
-### azure_availability_set
-### azure_load_balancer
-### azure_network_interface
-### azure_network_security_group
-### azure_public_ip_address
-### azure_virtual_machine
+- azure_virtual_network
+- azure_availability_set
+- azure_load_balancer
+- azure_network_interface
+- azure_network_security_group
+- azure_public_ip_address
+- azure_virtual_machine
 
 ## Limitations
 - There are no "managed entries" created on the Chef server other than for resources of type Microsoft.Compute.
@@ -114,6 +118,7 @@ azure_storage_account 'pendevstore01' do
   location 'West US'
   account_type 'Standard_LRS'
 end
+```
  
 ## Contributing
 
