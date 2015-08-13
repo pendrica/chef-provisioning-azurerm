@@ -10,6 +10,7 @@ class Chef
       attribute :resource_group, kind_of: String
       attribute :template_source, kind_of: String
       attribute :parameters, kind_of: Hash
+      attribute :chef_extension, kind_of: Hash
       attribute :outputs, kind_of: Hash
     end
   end

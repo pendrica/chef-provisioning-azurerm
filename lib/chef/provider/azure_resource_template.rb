@@ -15,16 +15,17 @@ class Chef
       action :deploy do
         converge_by("deploy or re-deploy Resource Manager template '#{new_resource.name}'") do
           template_src_file = ::File.join(Chef::Config[:chef_repo_path], new_resource.template_source)
-          fail "Cannot find file: #{template_src_file}" unless File.file?(template_src_file)
+          fail "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
           template_src = ::IO.read(template_src_file)
           template = JSON.parse(template_src)
 
           machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
           machines.each do |machine|
             Chef::Log.info("[Azure] Found a compute resource with name value: #{machine['name']} and location #{machine['location']}, adding a Chef VM Extension to it.")
-            template['resources'] << JSON.parse(chef_vm_extension(machine['name'], machine['location'], '1207.12'))
+            extension = chef_vm_extension(machine['name'], machine['location'])
+            template['resources'] << JSON.parse(extension)
           end
-
+          Chef::Log.debug("[Azure] Generated template for deployment: #{template}")
           doc = generate_wrapper_document(template)
           apply_template_deployment(doc)
           follow_deployment_until_ended
@@ -46,6 +47,10 @@ class Chef
       end
 
       def chef_vm_extension(machine_name, location)
+        Chef::Log.debug("[Azure] Config: #{Chef::Config.inspect}")
+        chef_server_url = Chef::Config[:chef_server_url]
+        validation_client_name = Chef::Config[:validation_client_name]
+        validation_key_content = ::File.read(Chef::Config[:validation_key])
         <<-EOH
           {
             "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -57,18 +62,18 @@ class Chef
             ],
             "properties": {
               "publisher": "Chef.Bootstrap.WindowsAzure",
-              "type": "#{new_resource.chef_extension.client_type}",
-              "typeHandlerVersion": "#{new_resource.chef_extension.version}",
+              "type": "#{new_resource.chef_extension[:client_type]}",
+              "typeHandlerVersion": "#{new_resource.chef_extension[:version]}",
               "settings": {
                 "bootstrap_options": {
-                  "chef_node_name" : "[#{machine_name.delete('[]')}]",
-                  "chef_server_url" : "#{new_resource.chef_extension.chef_server_url}",
-                  "validation_client_name" : "#{new_resource.chef_extension.validation_client_name}"
+                  "chef_node_name" : "[concat(#{machine_name.delete('[]')},'.','#{new_resource.resource_group}')]",
+                  "chef_server_url" : "#{chef_server_url}",
+                  "validation_client_name" : "#{validation_client_name}"
                 },
-                "runlist": "#{new_resource.chef_extension.runlist}"
+                "runlist": "#{new_resource.chef_extension[:runlist]}"
               },
               "protectedSettings": {
-                    "validation_key": "#{new_resource.chef_extension.validation_key_content}"
+                    "validation_key": "#{validation_key_content.gsub("\n", "\\n")}"
               }
             }
           }

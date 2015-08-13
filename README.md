@@ -54,7 +54,7 @@ The following resources are provided:
 - azure_storage_account
 - azure_resource_template
 
-The following resources are planned:
+The following resources are planned (note: these resources may be renamed as they are implemented):
 
 - azure_virtual_network
 - azure_availability_set
@@ -63,23 +63,29 @@ The following resources are planned:
 - azure_network_security_group
 - azure_public_ip_address
 - azure_virtual_machine
+- PaaS resources such as TrafficManager, SQL Server etc.
 
 ## Limitations
-- There are no "managed entries" created on the Chef server other than for resources of type Microsoft.Compute.
+- As the nodes self-register, there are no "managed entries" created on the Chef server other than for resources of type Microsoft.Compute.
 - Bootstrap over SSH or WinRM is not implemented
 - Connect to machine over SSH or WinRM is not implemented
 - machine, machine_batch, machine_image and load_balancer resources are not implemented
 - Azure resources that can only be created through the Service Management (ASM) API are not implemented
-- Validation keys to allow new resources to register themselves must be provided within the recipe
+- The path to the validation keys must be provided within the recipe (i.e. they must be in the chef-repo you are working with)
+- **Local mode** is not currently supported - the Chef VM extensions can only register themselves with a 'real' Chef server.
  
 ## Example Recipe 1 - deployment of Resource Manager template
 The following recipe creates a new Resource Group within your subscription (identified by the GUID on line 2).  It will then execute a resource template by merging the content at the given uri with the parameters specified.
+
+A ```deployment_template.json``` is required to be copied to ```cookbooks/provision/templates/default/recipes``` - many examples of a Resource Manager deployment template can be found at the [Azure QuickStart Templates Gallery on GitHub](https://github.com/Azure/azure-quickstart-templates).
+
+For our example, we'll need the azure_deploy.json from [here](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-simple-windows-vm/azuredeploy.json) and copy it to a path in our repo. Make sure you amend the path appropriately. 
 
 ### example1.rb
 
 ```ruby
 require 'chef/provisioning/azurerm'
-with_driver 'azurerm:abcd1234-YOUR-GUID-HERE-abcdef123456'
+with_driver 'AzureRM:abcd1234-YOUR-GUID-HERE-abcdef123456'
 
 azure_resource_group 'pendrica-demo-resources' do
   location 'West US' # optional, default: 'West US'
@@ -88,7 +94,7 @@ end
 
 azure_resource_template 'my-deployment' do
   resource_group 'pendrica-demo-resources'
-  template_source 'azuredeploy.json'
+  template_source 'cookbooks/provision/templates/default/recipes/azure_deploy.json'
   parameters newStorageAccountName: 'penstorage01',
              adminUsername: 'ubuntu',
              adminPassword: 'P2ssw0rd',
@@ -97,17 +103,12 @@ azure_resource_template 'my-deployment' do
 end
 ```
 
-### execution
-
-```chef-client --local example1.rb --minimal-ohai```
-
 ## Example Recipe 2 - deployment of locally replicated Storage Account
-
 ### example2.rb
 
 ```ruby
 require 'chef/provisioning/azurerm'
-with_driver 'azurerm:abcd1234-YOUR-GUID-HERE-abcdef123456'
+with_driver 'AzureRM:abcd1234-YOUR-GUID-HERE-abcdef123456'
 
 azure_resource_group 'pendrica-demo-resources' do
   location 'West US'
