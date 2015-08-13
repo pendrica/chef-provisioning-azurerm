@@ -2,9 +2,11 @@
 
 ```chef-provisioning-azurerm``` is a driver for [chef-provisioning](https://github.com/chef/chef-provisioning) that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API.
 
+**current status: prototype/experimental - use at own risk!**
+
 At the moment, the primary use case is to provide a way to deploy Azure Resource Manager templates using Chef as well as provide an automatic means to install and register the Chef client on these machine via the use of the Chef VM Extensions for Azure.
 
-![build status](https://travis-ci.org/pendrica/chef-provisioning-azurerm.svg?branch=master)
+[![Build status](https://travis-ci.org/pendrica/chef-provisioning-azurerm.svg?branch=master)](https://travis-ci.org/pendrica/chef-provisioning-azurerm) [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azurerm.svg)](http://badge.fury.io/rb/chef-provisioning-azurerm) 
 
 **Note:** If you are looking for a driver that works with the existing Microsoft Azure Service Management API please visit [chef-provisioning-azure](https://github.com/chef/chef-provisioning-azure)
 
