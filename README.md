@@ -96,14 +96,25 @@ end
 
 azure_resource_template 'my-deployment' do
   resource_group 'pendrica-demo-resources'
-  template_source 'cookbooks/provision/templates/default/recipes/azure_deploy.json'
+  template_source 'cookbooks/provision/files/default/azure_deploy.json'
   parameters newStorageAccountName: 'penstorage01',
              adminUsername: 'ubuntu',
              adminPassword: 'P2ssw0rd',
              dnsNameForPublicIP: 'pendricatest01',
              ubuntuOSVersion: '14.04.2-LTS'
+  chef_extension client_type: 'ChefClient',
+                 version: '1207.12',
+                 runlist: 'recipe[dscdemo::default]'
 end
 ```
+
+**Note: If no chef_extension configuration is specified, the ARM template will imported without enabling the Azure Chef VM Extension**.
+
+The Chef Server URL, Validation Client name and Validation Key content are not currently exposed parameters but can be overridden via setting the following Chef::Config parameters (via modifying ```c:\chef\client.rb``` or specifying ```-c path\to\client.rb``` on the ```chef-client``` command line). 
+
+ - ```Chef::Config[:chef_server_url]```
+ - ```Chef::Config[:validation_client_name]```
+ - ```Chef::Config[:validation_key]```
 
 ## Example Recipe 2 - deployment of locally replicated Storage Account
 ### example2.rb

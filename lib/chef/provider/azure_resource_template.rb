@@ -18,12 +18,13 @@ class Chef
           fail "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
           template_src = ::IO.read(template_src_file)
           template = JSON.parse(template_src)
-
-          machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
-          machines.each do |machine|
-            Chef::Log.info("[Azure] Found a compute resource with name value: #{machine['name']} and location #{machine['location']}, adding a Chef VM Extension to it.")
-            extension = chef_vm_extension(machine['name'], machine['location'])
-            template['resources'] << JSON.parse(extension)
+          if new_resource.chef_extension
+            machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
+            machines.each do |machine|
+              Chef::Log.info("[Azure] Found a compute resource with name value: #{machine['name']} and location #{machine['location']}, adding a Chef VM Extension to it.")
+              extension = chef_vm_extension(machine['name'], machine['location'])
+              template['resources'] << JSON.parse(extension)
+            end
           end
           Chef::Log.debug("[Azure] Generated template for deployment: #{template}")
           doc = generate_wrapper_document(template)
@@ -73,7 +74,7 @@ class Chef
                 "runlist": "#{new_resource.chef_extension[:runlist]}"
               },
               "protectedSettings": {
-                    "validation_key": "#{validation_key_content.gsub("\n", "\\n")}"
+                    "validation_key": "#{validation_key_content.gsub("\n", '\\n')}"
               }
             }
           }

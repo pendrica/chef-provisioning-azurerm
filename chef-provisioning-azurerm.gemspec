@@ -13,10 +13,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/pendrica/chef-provisioning-azurerm'
   spec.license       = 'Apache-2.0'
 
-  spec.files         = Dir['LICENSE.txt', 'README.md', 'lib/**/*']
+  spec.files         = Dir['LICENSE.txt', 'README.md', 'CHANGELOG.md', 'lib/**/*']
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'chef', '~> 12.0'
+  spec.add_dependency 'chef', '~> 12.0', '>= 12.3'
   spec.add_dependency 'chef-provisioning', '~> 1.0'
   spec.add_dependency 'json', '~> 1.8', '>= 1.8.2'
   spec.add_dependency 'inifile', '~> 2.0'
