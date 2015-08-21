@@ -7,7 +7,7 @@
 
 # Offense count: 5
 Metrics/AbcSize:
-  Max: 31
+  Max: 40
 
 # Offense count: 1
 # Configuration parameters: CountComments.
@@ -21,9 +21,4 @@ Metrics/MethodLength:
 
 # Offense count: 11
 Style/Documentation:
-  Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/TrailingWhitespace:
   Enabled: false

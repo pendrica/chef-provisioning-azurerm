@@ -1,5 +1,10 @@
-# Change Log
-## [0.2.13] 2015-08-20
+# chef-provisioning-azurerm Changelog
+
+## [0.2.14] - 2015-08-21
+### Changed
+- Minimize logging to info, favour action_handler.report_progress
+
+## [0.2.13] - 2015-08-20
 ### Changed
 - chef_extension parameters are now required if the Chef VM Extension is to be added to compute resources.
 - Updated README to include explanation of valid chef_extension parameters
@@ -8,5 +13,3 @@
 ### Added
 - Updated examples and README
 - Rubocop compliance
-
-## [0.2.11] - 2015-08

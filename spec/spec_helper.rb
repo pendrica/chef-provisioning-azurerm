@@ -1,3 +1,3 @@
 require 'simplecov'
-SimpleCov.start  
+SimpleCov.start
 require 'chef/provisioning/azurerm'

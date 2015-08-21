@@ -37,7 +37,7 @@ class Chef
           end
           response
         end
-        
+
         # Wraps a call to the Azure REST API with retry and timeout capability.
         def azure_call_until_expected_response(method, url, data, success_codes, wait_time)
           time_elapsed = 0
