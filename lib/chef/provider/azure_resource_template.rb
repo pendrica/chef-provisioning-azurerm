@@ -9,42 +9,44 @@ class Chef
         true
       end
 
-      # Applies a Resource Manager template to Azure.
-      # If resources of type Microsoft.Compute/virtualMachines are found, a Chef VM Extension is added
-      # Chef VM Extension parameters may be supplied in the recipe.
       action :deploy do
         converge_by("deploy or re-deploy Resource Manager template '#{new_resource.name}'") do
-          template_src_file = ::File.join(Chef::Config[:chef_repo_path], new_resource.template_source)
-          fail "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
-          template_src = ::IO.read(template_src_file)
-          template = JSON.parse(template_src)
-          if new_resource.chef_extension
-            machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
-            machines.each do |machine|
-              action_handler.report_progress "Found a compute resource with name: #{machine['name']} and location: #{machine['location']}, adding a Chef VM Extension to it."
-              extension = chef_vm_extension(machine['name'], machine['location'])
-              template['resources'] << JSON.parse(extension)
-            end
-          end
-          Chef::Log.debug("[Azure] Generated template for deployment: #{template}")
-          doc = generate_wrapper_document(template)
-          apply_template_deployment(doc)
-          follow_deployment_until_ended
+          result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment).value!
+          action_handler.report_progress "Result: #{result.body.properties.provisioning_state}"
+          Chef::Log.debug("result: #{result.body.inspect}")
+          follow_deployment_until_end_state
         end
       end
 
-      def generate_wrapper_document(template)
+      def deployment
+        deployment = Azure::ARM::Resources::Models::Deployment.new
+        deployment.properties = Azure::ARM::Resources::Models::DeploymentProperties.new
+        deployment.properties.template = template
+        deployment.properties.mode = Azure::ARM::Resources::Models::DeploymentMode::Incremental
+        deployment.properties.parameters = parameters_in_values_format
+        deployment
+      end
+
+      def template
+        template_src_file = ::File.join(Chef::Config[:chef_repo_path], new_resource.template_source)
+        fail "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
+        template = JSON.parse(::IO.read(template_src_file))
+        if new_resource.chef_extension
+          machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
+          machines.each do |machine|
+            action_handler.report_progress "adding a Chef VM Extension with name: #{machine['name']} and location: #{machine['location']} "
+            extension = chef_vm_extension(machine['name'], machine['location'])
+            template['resources'] << JSON.parse(extension)
+          end
+        end
+        template
+      end
+
+      def parameters_in_values_format
         parameters = new_resource.parameters.map do |key, value|
           { key.to_sym => { 'value' => value } }
         end
-        new_template = {
-          properties: {
-            template: template,
-            mode: 'Incremental',
-            parameters: parameters.reduce(:merge!)
-          }
-        }
-        new_template
+        parameters.reduce(:merge!)
       end
 
       def chef_vm_extension(machine_name, location)
@@ -80,65 +82,36 @@ class Chef
         EOH
       end
 
-      def apply_template_deployment(doc)
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-              "#{new_resource.resource_group}/providers/microsoft.resources/deployments/#{new_resource.name}" \
-              '?api-version=2015-01-01'
-        action_handler.report_progress "Posting Resource Template to #{url}.\n"
-        response = azure_call(:put, url, doc.to_json)
-        if response.code.to_i == 200 || response.code.to_i == 201
-          action_handler.report_progress "Accepted Resource Template #{new_resource.name} for deployment.\n"
-        else
-          fail "#{response.body}" if response.body
-        end
-      end
-
-      def validate_template_deployment(doc)
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-          "#{new_resource.resource_group}/providers/microsoft.resources/deployments/#{new_resource.name}" \
-          '/validate?api-version=2015-01-01'
-        response = azure_call(:post, url, doc.to_json)
-        Chef::Log.info("[Azure] #{response.body.inspect}")
-      end
-
-      # API ref: https://msdn.microsoft.com/en-us/library/azure/dn790565.aspx (Deployment)
-      # API ref: https://msdn.microsoft.com/en-us/library/azure/dn790519.aspx (Operations)
-      def follow_deployment_until_ended
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-          "#{new_resource.resource_group}/providers/microsoft.resources/deployments/#{new_resource.name}" \
-          '/operations?api-version=2015-01-01'
-
+      def follow_deployment_until_end_state
         end_provisioning_states = 'Canceled,Failed,Deleted,Succeeded'
-        end_operation_states = 'Failed,Succeeded'
         end_provisioning_state_reached = false
-
         until end_provisioning_state_reached
-          response = azure_call(:get, url, '')
-          Chef::Log.debug("Response body: #{response.body}") if response.body
-          deployment_operations = JSON.parse(response.body)
-          deployment_operations['value'].each do |val|
-            resource_provisioning_state = val['properties']['provisioningState']
-            resource_name = val['properties']['targetResource']['resourceName']
-            resource_type = val['properties']['targetResource']['resourceType']
-            end_operation_state_reached = end_operation_states.split(',').include?(resource_provisioning_state)
-            unless end_operation_state_reached
-              action_handler.report_progress "Resource #{resource_type} '#{resource_name}' provisioning status is #{resource_provisioning_state}\n"
-            end
-          end
+          list_outstanding_deployment_operations
           sleep 5
-          provisioning_state = retrieve_provisioning_state
-          Chef::Log.debug("[Azure] Resource Template deployment is in a state of '#{provisioning_state}'")
-          end_provisioning_state_reached = end_provisioning_states.split(',').include?(provisioning_state)
+          deployment_provisioning_state = deployment_state
+          end_provisioning_state_reached = end_provisioning_states.split(',').include?(deployment_provisioning_state)
         end
-        action_handler.report_progress "Resource Template deployment reached end state of '#{provisioning_state}'."
+        action_handler.report_progress "Resource Template deployment reached end state of '#{deployment_provisioning_state}'."
       end
 
-      def retrieve_provisioning_state
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-          "#{new_resource.resource_group}/providers/microsoft.resources/deployments/#{new_resource.name}" \
-          '?api-version=2015-01-01'
-        response = azure_call(:get, url, '')
-        JSON.parse(response.body)['properties']['provisioningState']
+      def list_outstanding_deployment_operations
+        end_operation_states = 'Failed,Succeeded'
+        deployment_operations = resource_management_client.deployment_operations.list(new_resource.resource_group, new_resource.name).value!
+        deployment_operations.body.value.each do |val|
+          resource_provisioning_state = val.properties.provisioning_state
+          resource_name = val.properties.target_resource.resource_name
+          resource_type = val.properties.target_resource.resource_type
+          end_operation_state_reached = end_operation_states.split(',').include?(resource_provisioning_state)
+          unless end_operation_state_reached
+            action_handler.report_progress "Resource #{resource_type} '#{resource_name}' provisioning status is #{resource_provisioning_state}\n"
+          end
+        end
+      end
+
+      def deployment_state
+        deployments = resource_management_client.deployments.get(new_resource.resource_group, new_resource.name).value!
+        Chef::Log.debug("deployments result: #{deployments.body.inspect}")
+        deployments.body.properties.provisioning_state
       end
     end
   end
