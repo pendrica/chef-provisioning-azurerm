@@ -1,6 +1,6 @@
 # chef-provisioning-azurerm
 
-```chef-provisioning-azurerm``` is a driver for [chef-provisioning](https://github.com/chef/chef-provisioning) that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API.
+```chef-provisioning-azurerm``` is a driver for [chef-provisioning](https://github.com/chef/chef-provisioning) that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API via the [azure-sdk-for-ruby](https://github.com/azure/azure-sdk-for-ruby).
 
 **current status: prototype/experimental - use at own risk!**
 
@@ -24,23 +24,28 @@ This plugin is distributed as a Ruby Gem. To install it, run:
     
 ### Configuration
 
-For the driver to interact with the Microsoft Azure Resource management REST API, a username and password needs to be configured that refer to an account with the role 'Service Administrator'.
+For the driver to interact with the Microsoft Azure Resource management REST API, a Service Principal needs to be configured with Owner rights against the specific subscription being targeted.  Using an Organization account and related password is no longer supported.  To create a Service Principal and apply the correct permissions, follow the instructions in the article: [Authenticating a service principal with Azure Resource Manager](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/#authenticate-service-principal-with-password---azure-cli)   
 
-*Unlike the Microsoft Azure Service Management API which performs authentication via X.509 v3 certificates, the Resource Management API requires an OAUTH2 authentication token to be passed with each request.  To obtain the token, a username and password is used.*
+You will essentially need 4 parameters from the above article to configure Chef Provisioning: **Subscription ID**, **Client ID**, **Client Secret/Password** and **Tenant ID**.  These can be easily obtained using the azure-cli tools (v0.9.8 or higher) on any platform.
 
 Using a text editor, open or create the file ```~/.azure/credentials``` and add the following section:
 
 ```ruby
 [abcd1234-YOUR-GUID-HERE-abcdef123456]
-username = "username@tenant.onmicrosoft.com"
-password = "your-password-here"
+client_id = "48b9bba3-YOUR-GUID-HERE-90f0b68ce8ba"
+client_secret = "your-client-secret-here"
+tenant_id = "9c117323-YOUR-GUID-HERE-9ee430723ba3"
 ```
 
-The GUID required is that of your Azure subscription.  This can be found after logging into the portal at https://portal.azure.com 
+If preferred, you may also set the following environment variables on the "provisioning node", replacing the values with those obtained when you configured the service principal
 
-**Note:** Storage of the password is required due to the generated access token only being valid for 3600 seconds each time it is generated [1].
+```ruby
+AZURE_CLIENT_ID="48b9bba3-YOUR-GUID-HERE-90f0b68ce8ba"
+AZURE_CLIENT_SECRET="your-client-secret-here"
+AZURE_TENANT_ID="9c117323-YOUR-GUID-HERE-9ee430723ba3"
+```
 
-[1] https://twitter.com/vibronet/status/461260062204239872
+Note that the environment variables, if set, take preference over the values in a configuration file.  The subscription id will be taken from the recipe.
 
 ## Features
 
@@ -53,8 +58,8 @@ To work around the issue of storing chef-provisioning driver info in the Chef se
 The following resources are provided: 
 
 - azure_resource_group
-- azure_storage_account
 - azure_resource_template
+- azure_storage_account
 
 The following resources are planned (note: these resources may be renamed as they are implemented):
 
@@ -89,32 +94,34 @@ For our example, we'll need the azure_deploy.json from [here](https://raw.github
 require 'chef/provisioning/azurerm'
 with_driver 'AzureRM:abcd1234-YOUR-GUID-HERE-abcdef123456'
 
-azure_resource_group 'pendrica-demo-resources' do
+azure_resource_group 'pendrica-demo' do
   location 'West US' # optional, default: 'West US'
   tags businessUnit: 'IT' # optional
 end
 
 azure_resource_template 'my-deployment' do
-  resource_group 'pendrica-demo-resources'
+  resource_group 'pendrica-demo'
   template_source 'cookbooks/provision/files/default/azure_deploy.json'
-  parameters newStorageAccountName: 'penstorage01',
-             adminUsername: 'ubuntu',
+  parameters newStorageAccountName: "mystorageaccount01",
+             adminUsername: 'stuart',
              adminPassword: 'P2ssw0rd',
-             dnsNameForPublicIP: 'pendricatest01',
-             ubuntuOSVersion: '14.04.2-LTS'
+             dnsNameForPublicIP: "my-demo-server",
+             windowsOSVersion: '2012-R2-Datacenter'
   chef_extension client_type: 'ChefClient',
-                 version: '1207.12',
-                 runlist: 'recipe[dscdemo::default]'
+                 version: '1210.12',
+                 runlist: 'role[webserver]'
 end
 ```
 
-**Note: If no chef_extension configuration is specified, the ARM template will imported without enabling the Azure Chef VM Extension**.
+**Note: If no chef_extension configuration is specified, the ARM template will imported without enabling the Azure Chef VM Extension.**
 
 The Chef Server URL, Validation Client name and Validation Key content are not currently exposed parameters but can be overridden via setting the following Chef::Config parameters (via modifying ```c:\chef\client.rb``` or specifying ```-c path\to\client.rb``` on the ```chef-client``` command line). 
 
- - ```Chef::Config[:chef_server_url]```
- - ```Chef::Config[:validation_client_name]```
- - ```Chef::Config[:validation_key]```
+```ruby
+Chef::Config[:chef_server_url]
+Chef::Config[:validation_client_name]
+Chef::Config[:validation_key]
+```
 
 ## Example Recipe 2 - deployment of locally replicated Storage Account
 ### example2.rb
@@ -123,12 +130,12 @@ The Chef Server URL, Validation Client name and Validation Key content are not c
 require 'chef/provisioning/azurerm'
 with_driver 'AzureRM:abcd1234-YOUR-GUID-HERE-abcdef123456'
 
-azure_resource_group 'pendrica-demo-resources' do
+azure_resource_group 'pendrica-demo' do
   location 'West US'
 end
 
-azure_storage_account 'pendevstore01' do
-  resource_group 'pendrica-demo-resources'
+azure_storage_account 'mystorageaccount02' do
+  resource_group 'pendrica-demo'
   location 'West US'
   account_type 'Standard_LRS'
 end

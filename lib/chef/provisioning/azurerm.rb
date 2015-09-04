@@ -2,6 +2,8 @@ require 'chef/provisioning'
 require 'chef/provisioning/version'
 require 'chef/provisioning/azurerm/driver'
 require 'chef/provisioning/azurerm/version'
+require 'azure_mgmt_resources'
+
 Chef::Log.info("chef-provisioning-azurerm #{Chef::Provisioning::AzureRM::VERSION}")
 Chef::Log.info("chef-provisioning #{Chef::Provisioning::VERSION}")
 

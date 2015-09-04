@@ -8,7 +8,7 @@ describe Chef::Resource::AzureResourceGroup do
   end
 
   it 'defaults to :create action' do
-    expect(resource.new('resource-group').action).to eq([:create])
+    expect(resource.new('resource-group').action).to eq(:create)
   end
 
   it 'does not instantiate when name is longer than 80 characters long' do

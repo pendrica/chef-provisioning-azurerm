@@ -8,6 +8,6 @@ describe Chef::Resource::AzureResourceTemplate do
   end
 
   it 'defaults to :deploy action' do
-    expect(resource.new('deployment').action).to eq([:deploy])
+    expect(resource.new('deployment').action).to eq(:deploy)
   end
 end

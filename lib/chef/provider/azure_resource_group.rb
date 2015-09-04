@@ -9,26 +9,23 @@ class Chef
         true
       end
 
-      def api_url
-        "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-        "#{new_resource.name}?api-version=2015-01-01"
-      end
-
-      # API ref: https://msdn.microsoft.com/en-us/library/azure/dn790525.aspx
       action :create do
         converge_by("create or update Resource Group #{new_resource.name}") do
-          doc = {
-            location: new_resource.location,
-            tags: new_resource.tags
-          }
-          azure_call_until_expected_response(:put, api_url, doc.to_json, '201,200', 60)
+          resource_group = Azure::ARM::Resources::Models::ResourceGroup.new
+          resource_group.location = new_resource.location
+          resource_group.tags = new_resource.tags
+          result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
         end
       end
 
-      # API ref: https://msdn.microsoft.com/en-us/library/azure/dn790539.aspx
       action :destroy do
         converge_by("destroy Resource Group #{new_resource.name}") do
-          azure_call_until_expected_response(:delete, api_url, nil, '404', 60)
+          resource_group_exists = resource_management_client.resource_groups.check_existence(new_resource.name).value!
+          if resource_group_exists.body == "true"
+            result = resource_management_client.resource_groups.delete(new_resource.name).value!
+          else
+            action_handler.report_progress "Resource Group #{new_resource.name} was not found."
+          end
         end
       end
     end
