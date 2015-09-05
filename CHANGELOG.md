@@ -1,5 +1,9 @@
 # chef-provisioning-azurerm Changelog
 
+## [0.3.1] - 2015-09-05
+### Changed
+- :destroy action on azure_resource_group now correctly detects existence of resource group before attempting deletion
+
 ## [0.3.0] - 2015-09-04
 ### Changed
 - Now using ARM functionality from the updated [Azure SDK for Ruby](http://github.com/azure/azure-sdk-for-ruby) rather than direct HTTPS calls to the Resource Manager API.
