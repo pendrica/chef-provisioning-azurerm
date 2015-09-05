@@ -21,7 +21,7 @@ class Chef
       action :destroy do
         converge_by("destroy Resource Group #{new_resource.name}") do
           resource_group_exists = resource_management_client.resource_groups.check_existence(new_resource.name).value!
-          if resource_group_exists.body == "true"
+          if resource_group_exists.body
             result = resource_management_client.resource_groups.delete(new_resource.name).value!
           else
             action_handler.report_progress "Resource Group #{new_resource.name} was not found."
