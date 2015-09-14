@@ -26,6 +26,6 @@ describe Chef::Resource::AzureStorageAccount do
   end
 
   it 'does not set a custom domain when none is provided' do
-    expect { resource.new('storageaccountname').custom_domain }.to eq('')
+    expect(resource.new('storageaccountname').custom_domain).to eq(nil)
   end
 end
