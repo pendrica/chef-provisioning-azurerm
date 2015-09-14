@@ -33,7 +33,7 @@ class Chef
           storage_account_exists = does_storage_account_exist
           if storage_account_exists
             action_handler.report_progress 'destroying Storage Account'
-            storage_management_client.storage_accounts.delete(new_resource.name).value!
+            storage_management_client.storage_accounts.delete(new_resource.resource_group, new_resource.name).value!
           else
             action_handler.report_progress "Storage Account #{new_resource.name} was not found."
           end
