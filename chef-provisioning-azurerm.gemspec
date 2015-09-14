@@ -21,6 +21,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'json', '~> 1.8', '>= 1.8.2'
   spec.add_dependency 'inifile', '~> 2.0'
   spec.add_dependency 'azure_mgmt_resources', '~> 0'
+  spec.add_dependency 'azure_mgmt_storage', '~> 0'
+  spec.add_dependency 'azure_mgmt_compute', '~> 0'
+  spec.add_dependency 'azure_mgmt_network', '~> 0'
 
   spec.add_development_dependency 'bundler', '~> 1.7'
   spec.add_development_dependency 'rake', '~> 10.0'

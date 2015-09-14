@@ -24,4 +24,8 @@ describe Chef::Resource::AzureStorageAccount do
   it 'does not instantiate when name contains non-alphanumeric characters' do
     expect { resource.new('s-t-o-r-a-g-e').name }.to raise_error(Chef::Exceptions::ValidationFailed)
   end
+
+  it 'does not set a custom domain when none is provided' do
+    expect { resource.new('storageaccountname').custom_domain }.to eq('')
+  end
 end

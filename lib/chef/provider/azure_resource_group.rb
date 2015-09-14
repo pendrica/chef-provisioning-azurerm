@@ -15,6 +15,7 @@ class Chef
           resource_group.location = new_resource.location
           resource_group.tags = new_resource.tags
           result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
+          Chef::Log.debug("result: #{result.body.inspect}")
         end
       end
 
@@ -23,6 +24,7 @@ class Chef
           resource_group_exists = resource_management_client.resource_groups.check_existence(new_resource.name).value!
           if resource_group_exists.body
             result = resource_management_client.resource_groups.delete(new_resource.name).value!
+            Chef::Log.debug("result: #{result.body.inspect}")
           else
             action_handler.report_progress "Resource Group #{new_resource.name} was not found."
           end

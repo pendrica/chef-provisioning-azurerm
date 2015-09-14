@@ -18,6 +18,27 @@ class Chef
           client.subscription_id = new_resource.subscription_id
           client
         end
+
+        def storage_management_client
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
+          client = Azure::ARM::Storage::StorageManagementClient.new(credentials)
+          client.subscription_id = new_resource.subscription_id
+          client
+        end
+
+        def compute_management_client
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
+          client = Azure::ARM::Compute::ComputeManagementClient.new(credentials)
+          client.subscription_id = new_resource.subscription_id
+          client
+        end
+
+        def network_management_client
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
+          client = Azure::ARM::Network::NetworkManagementClient.new(credentials)
+          client.subscription_id = new_resource.subscription_id
+          client
+        end
       end
     end
   end

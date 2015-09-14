@@ -1,7 +1,5 @@
 require 'chef/provisioning/azurerm/azure_provider'
 
-# MSDN: https://msdn.microsoft.com/en-us/library/azure/mt163564.aspx
-
 class Chef
   class Provider
     class AzureStorageAccount < Chef::Provisioning::AzureRM::AzureProvider
@@ -12,28 +10,86 @@ class Chef
       end
 
       action :create do
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-              "#{new_resource.resource_group}/providers/Microsoft.Storage/storageAccounts/#{new_resource.name}" \
-              '?api-version=2015-05-01-preview'
-        doc = {
-          location: new_resource.location,
-          tags: new_resource.tags,
-          properties: {
-            accountType: "#{new_resource.account_type}"
-          }
-        }
-        converge_by("create or update Storage Account: #{new_resource.name}") do
-          azure_call_until_expected_response(:put, url, doc.to_json, '201,200', 600)
+        # Does the storage account already exist in the specified resource group?
+        storage_account_exists = does_storage_account_exist
+
+        # If the storage account already exists, do an update
+        if storage_account_exists
+          converge_by("update Storage Account #{new_resource.name}") do
+            update_storage_account
+          end
+        else
+          # Create the storage account complete with tags and properties
+          converge_by("create Storage Account #{new_resource.name}") do
+            create_storage_account
+            # now update the resource with properties that are not settable in the create operation (e.g. create domain)
+            update_storage_account
+          end
         end
       end
 
       action :destroy do
-        url = "https://management.azure.com/subscriptions/#{new_resource.subscription_id}/resourcegroups/" \
-              "#{new_resource.resource_group}/providers/Microsoft.Storage/storageAccounts/#{new_resource.name}" \
-              '?api-version=2015-05-01-preview'
         converge_by("destroy Storage Account: #{new_resource.name}") do
-          azure_call_until_expected_response(:delete, url, nil, '404', 600)
+          storage_account_exists = does_storage_account_exist
+          if storage_account_exists
+            action_handler.report_progress 'destroying Storage Account'
+            storage_management_client.storage_accounts.delete(new_resource.name).value!
+          else
+            action_handler.report_progress "Storage Account #{new_resource.name} was not found."
+          end
         end
+      end
+
+      def does_storage_account_exist
+        storage_account_list = storage_management_client.storage_accounts.list_by_resource_group(new_resource.resource_group).value!
+        storage_account_list.body.value.each do |storage_account|
+          return true if storage_account.name == new_resource.name
+        end
+        false
+      end
+
+      def create_storage_account
+        storage_account = Azure::ARM::Storage::Models::StorageAccountCreateParameters.new
+        storage_account.location = new_resource.location
+        storage_account.tags = new_resource.tags
+        storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesCreateParameters.new
+        storage_account.properties.account_type = new_resource.account_type
+        action_handler.report_progress 'creating Storage Account'
+        result = storage_management_client.storage_accounts.create(new_resource.resource_group, new_resource.name, storage_account).value!
+        Chef::Log.debug(result)
+      end
+
+      def update_storage_account
+        update_storage_account_tags
+        update_storage_account_account_type
+        update_storage_account_custom_domain
+      end
+
+      def update_storage_account_tags
+        storage_account = Azure::ARM::Storage::Models::StorageAccountUpdateParameters.new
+        storage_account.tags = new_resource.tags
+        storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
+        action_handler.report_progress 'updating Tags'
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        Chef::Log.debug(result)
+      end
+
+      def update_storage_account_account_type
+        storage_account = Azure::ARM::Storage::Models::StorageAccountUpdateParameters.new
+        storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
+        storage_account.properties.account_type = new_resource.account_type
+        action_handler.report_progress 'updating Properties'
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        Chef::Log.debug(result)
+      end
+
+      def update_storage_account_custom_domain
+        storage_account = Azure::ARM::Storage::Models::StorageAccountUpdateParameters.new
+        storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
+        storage_account.properties.custom_domain = new_resource.custom_domain
+        action_handler.report_progress 'updating Custom Domain'
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        Chef::Log.debug(result)
       end
     end
   end
