@@ -57,7 +57,6 @@ class Chef
           raise operation_error
         end
 
-        virtual_network
       end
 
       def create_virtual_network
@@ -67,9 +66,9 @@ class Chef
         virtual_network.location = new_resource.location
 
         virtual_network.properties = create_virtual_network_properties( 
-          new_resource.address_prefixes, new_resource.subnets, new_resource.dhcp_servers )
+          new_resource.address_prefixes, new_resource.subnets, new_resource.dns_servers )
 
-        action_handler.report_progress 'Creating Virtual Network...'
+        action_handler.report_progress 'Creating or Updating Virtual Network...'
         begin
           result = network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
           Chef::Log.debug(result)
@@ -99,15 +98,15 @@ class Chef
       #  end
       #end
 
-      def create_virtual_network_properties( address_prefixes, subnets, dhcp_servers )
+      def create_virtual_network_properties( address_prefixes, subnets, dns_servers )
         props = Azure::ARM::Network::Models::VirtualNetworkPropertiesFormat.new
         
         props.address_space = Azure::ARM::Network::Models::AddressSpace.new
         props.address_space.address_prefixes = address_prefixes
 
-        if (dhcp_servers)
+        if (dns_servers)
           props.dhcp_options = Azure::ARM::Network::Models::DhcpOptions.new
-          props.dhcp_options = dhcp_severs
+          props.dhcp_options.dns_servers = dns_servers
         end
 
         props.subnets=[]

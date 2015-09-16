@@ -13,7 +13,7 @@ class Chef
       attribute :tags, kind_of: Hash
       attribute :address_prefixes, kind_of: Array
       attribute :subnets, kind_of: Array
-      attribute :dhcp_servers, kind_of: Array
+      attribute :dns_servers, kind_of: Array
     end
   end
 end
