@@ -15,15 +15,12 @@ class Chef
 
         if virtual_network_exists
           converge_by("update virtual network #{new_resource.name}") do
-            #update_virtual_network
-            create_virtual_network # are create and update different (and should they be??)
+            # currently, we let ARM manage the idempotence, so crete and update are the same
+            create_or_update_virtual_network # are create and update different (and should they be??)
           end
         else
-          # Create the storage account complete with tags and properties
           converge_by("create virtual network #{new_resource.name}") do
-            create_virtual_network
-            # now update the resource with properties that are not settable in the create operation (e.g. create domain)
-            #update_virtual_network
+            create_or_update_virtual_network
           end
         end
       end
@@ -59,7 +56,7 @@ class Chef
 
       end
 
-      def create_virtual_network
+      def create_or_update_virtual_network
         virtual_network = Azure::ARM::Network::Models::VirtualNetwork.new
 
         virtual_network.tags = new_resource.tags
@@ -74,29 +71,10 @@ class Chef
           Chef::Log.debug(result)
         rescue MsRestAzure::AzureOperationError => operation_error
           error = operation_error.body['error']
-          Chef::Log.error "ERROR updating Virtual Network: #{error}"
+          Chef::Log.error "ERROR creating or updating Virtual Network: #{error}"
           raise operation_error
         end
       end
-
-      #def update_virtual_network
-      #  update_virtual_network_tags
-      #end
-
-      #def update_virtual_network_tags
-      #  virtual_network = Azure::ARM::Network::Models::VirtualNetwork.new
-      #  virtual_network.tags = new_resource.tags
-      #  virtual_network.properties = Azure::ARM::Network::Models::VirtualNetworkPropertiesFormat.new
-      #  action_handler.report_progress 'updating Tags'
-      #  begin
-      #    result = network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
-      #    Chef::Log.debug(result)
-      #  rescue MsRestAzure::AzureOperationError => operation_error
-      #    error = operation_error.body['error']
-      #    Chef::Log.error "ERROR updating Virtual Network tags: #{error}"
-      #    raise operation_error
-      #  end
-      #end
 
       def create_virtual_network_properties( address_prefixes, subnets, dns_servers )
         props = Azure::ARM::Network::Models::VirtualNetworkPropertiesFormat.new
