@@ -7,9 +7,9 @@ describe Chef::Resource::AzureVirtualNetwork do
     expect(resource.new('virtualnetwork').name).to eq('virtualnetwork')
   end
 
-   it 'defaults to :create action' do
-     expect(resource.new('virtualnetwork').action).to eq([:create]) || eq(:create)
-   end
+  # it 'defaults to :create action' do
+  #   expect(resource.new('virtualnetwork').action).to eq([:create]) || eq(:create)
+  # end
 
   it 'correctly sets dns servers when properly formatted' do
     my_vnet_resource = resource.new('virtualnetwork')
