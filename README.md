@@ -60,10 +60,10 @@ The following resources are provided:
 - azure_resource_group
 - azure_resource_template
 - azure_storage_account
+- azure_virtual_network
 
 The following resources are planned (note: these resources may be renamed as they are implemented):
 
-- azure_virtual_network
 - azure_availability_set
 - azure_load_balancer
 - azure_network_interface
@@ -141,6 +141,44 @@ azure_storage_account 'mystorageaccount02' do
 end
 ```
  
+## Example Recipe 3 - deployment of Virtual Network
+This example creates a virtual network named 'myvnet' in the pendrica-demo 
+resource group in the West US region.  This virtual network contains 4 subnets
+in the 10.123.123.0/24 CIDR block.  The specified DNS servers will be used
+used by VMs in this virtual network.
+
+**Note that if dns_servers are not specified, the default azure dns will
+be used.
+
+### example3.rb
+
+```ruby
+require 'chef/provisioning/azurerm'
+with_driver 'AzureRM:abcd1234-YOUR-GUID-HERE-abcdef123456'
+
+azure_resource_group 'pendrica-demo' do
+  location 'West US'
+end
+
+azure_virtual_network 'myvnet' do
+  action :create
+  resource_group 'pendrica-demo'
+  location 'West US'
+  address_prefixes ['10.123.123.0/24' ] 
+  subnets [
+  { name: 'infrastructure', address_prefix: '10.123.123.0/28' },
+  { name: 'data', address_prefix: '10.123.123.32/27' },
+  { name: 'app', address_prefix: '10.123.123.64/26' },
+  { name: 'web', address_prefix: '10.123.123.128/25' },
+  ]
+  dns_servers ['10.123.123.5', '10.123.123.6']
+  tags environment: 'test', 
+       owner: 'jsmyth'  
+end
+
+
+```
+
 ## Contributing
 
 Contributions to the project are welcome via submitting Pull Requests.

@@ -35,7 +35,7 @@ class Chef
 
         def network_management_client
           credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
-          client = Azure::ARM::Network::NetworkManagementClient.new(credentials)
+          client = Azure::ARM::Network::NetworkResourceProviderClient.new(credentials)
           client.subscription_id = new_resource.subscription_id
           client
         end

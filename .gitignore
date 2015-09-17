@@ -1,3 +1,5 @@
+*.sw[opn]
+Gemfile.lock
 *.gem
 /nodes
 /docs/examples
