@@ -10,7 +10,6 @@ class Chef
       end
 
       action :create do
-
         virtual_network_exists = does_virtual_network_exist
 
         if virtual_network_exists
@@ -53,7 +52,6 @@ class Chef
           Chef::Log.error "ERROR destroying Virtual Network:  #{error}"
           raise operation_error
         end
-
       end
 
       def create_or_update_virtual_network
@@ -62,8 +60,8 @@ class Chef
         virtual_network.tags = new_resource.tags
         virtual_network.location = new_resource.location
 
-        virtual_network.properties = create_virtual_network_properties( 
-          new_resource.address_prefixes, new_resource.subnets, new_resource.dns_servers )
+        virtual_network.properties = create_virtual_network_properties(
+          new_resource.address_prefixes, new_resource.subnets, new_resource.dns_servers)
 
         action_handler.report_progress 'Creating or Updating Virtual Network...'
         begin
@@ -76,18 +74,18 @@ class Chef
         end
       end
 
-      def create_virtual_network_properties( address_prefixes, subnets, dns_servers )
+      def create_virtual_network_properties(address_prefixes, subnets, dns_servers)
         props = Azure::ARM::Network::Models::VirtualNetworkPropertiesFormat.new
-        
+
         props.address_space = Azure::ARM::Network::Models::AddressSpace.new
         props.address_space.address_prefixes = address_prefixes
 
-        if (dns_servers)
+        if dns_servers
           props.dhcp_options = Azure::ARM::Network::Models::DhcpOptions.new
           props.dhcp_options.dns_servers = dns_servers
         end
 
-        props.subnets=[]
+        props.subnets = []
         subnets.each do |subnet|
           props.subnets.push(create_subnet(subnet[:name], subnet[:address_prefix]))
         end
@@ -95,7 +93,6 @@ class Chef
         props
       end
 
-  
       def create_subnet(subnet_name, subnet_address)
         subnet = Azure::ARM::Network::Models::Subnet.new
         subnet.name = subnet_name
@@ -104,13 +101,6 @@ class Chef
 
         subnet
       end
-
-
-    end #class AzureVirtualNetwork
-  end #class Provider
-end #class Chef
-
-
-
-  
-    
+    end # class AzureVirtualNetwork
+  end # class Provider
+end # class Chef

@@ -6,6 +6,4 @@ describe Chef::Resource::AzureVirtualNetwork do
   it 'instantiates correctly with name' do
     expect(resource.new('virtualnetwork').name).to eq('virtualnetwork')
   end
-
-  
 end
