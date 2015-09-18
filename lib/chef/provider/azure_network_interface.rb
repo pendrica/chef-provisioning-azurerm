@@ -34,8 +34,6 @@ class Chef
         end
       end
 
-
-
       def does_network_interface_exist
         begin
           network_interface_list = network_management_client.network_interfaces.list(new_resource.resource_group).value!
@@ -64,22 +62,10 @@ class Chef
       end
 
       def create_or_update_network_interface
-        network_interface = Azure::ARM::Network::Models::NetworkInterface.new
-        network_interface.name = new_resource.name
-        network_interface.tags = new_resource.tags
-        network_interface.location = new_resource.location
-
-        new_resource.virtual_network_resource_group(new_resource.resource_group) unless new_resource.virtual_network_resource_group
-        subnet_ref = get_subnet_ref(new_resource.virtual_network_resource_group, 
-          new_resource.virtual_network,  new_resource.subnet)
-
-        network_interface.properties = create_network_interface_properties(
-          new_resource.name, new_resource.private_ip_allocation_method,
-          new_resource.private_ip_address, subnet_ref, new_resource.dns_servers )
-
+        network_interface_params = create_network_interface_params
         action_handler.report_progress 'Creating or Updating network interface...'
         begin
-          result = network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface).value!
+          result = network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface_params).value!
           Chef::Log.debug(result)
         rescue MsRestAzure::AzureOperationError => operation_error
           error = operation_error.body['error']
@@ -88,17 +74,40 @@ class Chef
         end
       end
 
-      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref, dns_servers) 
+      def create_network_interface_params
+        network_interface = create_network_interface(new_resource.name, new_resource.tags, new_resource.location)
+
+        new_resource.virtual_network_resource_group(new_resource.resource_group) unless new_resource.virtual_network_resource_group
+        subnet_ref = get_subnet_ref(new_resource.virtual_network_resource_group,
+                                    new_resource.virtual_network, new_resource.subnet)
+
+        network_interface.properties = create_network_interface_properties(
+          new_resource.name, new_resource.private_ip_allocation_method,
+          new_resource.private_ip_address, subnet_ref, new_resource.dns_servers)
+
+        network_interface
+      end
+
+      def create_network_interface(name, tags, location)
+        network_interface = Azure::ARM::Network::Models::NetworkInterface.new
+        network_interface.name = name
+        network_interface.tags = tags
+        network_interface.location = location
+
+        network_interface
+      end
+
+      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref, dns_servers)
         nic_properties = Azure::ARM::Network::Models::NetworkInterfacePropertiesFormat.new
 
         nic_properties.dns_settings = create_network_interface_dns_settings(dns_servers) if dns_servers
- 
+
         ip_config =  create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref)
-        nic_properties.ip_configurations = [ ip_config ]
-      
+        nic_properties.ip_configurations = [ip_config]
+
         nic_properties
       end
-      
+
       def create_network_interface_dns_settings(dns_servers)
         dns_settings = Azure::ARM::Network::Models::NetworkInterfaceDnsSettings.new
         dns_settings.dns_servers = dns_servers
@@ -118,9 +127,9 @@ class Chef
         end
         ip_config
       end
-      
+
       def get_subnet_ref(resource_group_name, vnet_name, subnet_name)
-        [resource_group_name, vnet_name, subnet_name].each do |v|         
+        [resource_group_name, vnet_name, subnet_name].each do |v|
           return nil if v.nil? || v.empty?
         end
 
@@ -133,11 +142,9 @@ class Chef
           Chef::Log.error error
           raise operation_error
         end
-      
-        subnet.id
-      
-      end
 
+        subnet.id
+      end
     end # class AzureNetworkInterface
   end # class Provider
 end # class Chef

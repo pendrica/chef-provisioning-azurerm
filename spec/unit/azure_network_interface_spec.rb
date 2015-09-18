@@ -45,7 +45,6 @@ describe Chef::Resource::AzureNetworkInterface do
     expect { my_vnet_resource.dns_servers(['300.0.0.1']) }.to raise_error(Chef::Exceptions::ValidationFailed)
   end
 
-
   it 'correctly sets private_ip_address when properly formatted' do
     my_vnet_resource = resource.new('interface')
     expect(my_vnet_resource.private_ip_address('10.0.0.1')).to eq('10.0.0.1')
@@ -79,5 +78,4 @@ describe Chef::Resource::AzureNetworkInterface do
     my_vnet_resource = resource.new('interface')
     expect { my_vnet_resource.private_ip_allocation_method('INVALID') }.to raise_error(Chef::Exceptions::ValidationFailed)
   end
-
 end
