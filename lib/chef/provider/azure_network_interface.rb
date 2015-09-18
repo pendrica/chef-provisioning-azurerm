@@ -101,16 +101,21 @@ class Chef
         ip_config = Azure::ARM::Network::Models::NetworkInterfaceIpConfiguration.new
         ip_config.name = ipconfig_name
         ip_config.properties = Azure::ARM::Network::Models::NetworkInterfaceIpConfigurationPropertiesFormat.new
-        ip_config.properties.private_ipallocation_method = private_ip_type
-        ip_config.properties.private_ipaddress = private_ip
+        ip_config.properties.private_ipallocation_method = private_ip_type if  private_ip_type
+        ip_config.properties.private_ipaddress = private_ip if private_ip
 
-        ip_config.properties.subnet = Azure::ARM::Network::Models::Subnet.new
-        ip_config.properties.subnet.id = subnet_ref
-      
+        if subnet_ref
+          ip_config.properties.subnet = Azure::ARM::Network::Models::Subnet.new
+          ip_config.properties.subnet.id = subnet_ref
+        end
         ip_config
       end
       
       def get_subnet_ref(resource_group_name, vnet_name, subnet_name)
+        [resource_group_name, vnet_name, subnet_name].each do |v|         
+          return nil if v.nil? || v.empty?
+        end
+
         begin
           promise =  network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name)
           result = promise.value!
