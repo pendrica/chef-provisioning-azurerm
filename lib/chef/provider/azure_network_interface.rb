@@ -75,7 +75,7 @@ class Chef
 
         network_interface.properties = create_network_interface_properties(
           new_resource.name, new_resource.private_ip_allocation_method,
-          new_resource.private_ip_address, subnet_ref )
+          new_resource.private_ip_address, subnet_ref, new_resource.dns_servers )
 
         action_handler.report_progress 'Creating or Updating network interface...'
         begin
@@ -88,15 +88,23 @@ class Chef
         end
       end
 
-      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref) 
+      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref, dns_servers) 
         nic_properties = Azure::ARM::Network::Models::NetworkInterfacePropertiesFormat.new
-      
+
+        nic_properties.dns_settings = create_network_interface_dns_settings(dns_servers) if dns_servers
+ 
         ip_config =  create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref)
         nic_properties.ip_configurations = [ ip_config ]
       
         nic_properties
       end
       
+      def create_network_interface_dns_settings(dns_servers)
+        dns_settings = Azure::ARM::Network::Models::NetworkInterfaceDnsSettings.new
+        dns_settings.dns_servers = dns_servers
+        dns_settings
+      end
+
       def create_network_interface_ip_configuration(ipconfig_name, private_ip_type, private_ip, subnet_ref)
         ip_config = Azure::ARM::Network::Models::NetworkInterfaceIpConfiguration.new
         ip_config.name = ipconfig_name
