@@ -1,4 +1,8 @@
 require 'chef/provisioning/azurerm/azure_provider'
+require 'pry'
+#require 'pry-nav'
+#require 'pry-stack_explorer'
+
 
 class Chef
   class Provider
@@ -11,14 +15,15 @@ class Chef
 
       action :create do
         network_interface_exists = does_network_interface_exist
-
         if network_interface_exists
           converge_by("update network interface #{new_resource.name}") do
             # currently, we let ARM manage the idempotence, so crete and update are the same
+            new_resource.public_ip_resource.run_action(:create)
             create_or_update_network_interface # are create and update different (and should they be??)
           end
         else
           converge_by("create network interface #{new_resource.name}") do
+            new_resource.public_ip_resource.run_action(:create)
             create_or_update_network_interface
           end
         end
@@ -27,6 +32,7 @@ class Chef
       action :destroy do
         converge_by("destroy network interface: #{new_resource.name}") do
           if does_network_interface_exist
+            new_resource.public_ip_resource.run_action(:destroy)
             destroy_network_interface
           else
             action_handler.report_progress "network interface #{new_resource.name} was not found."
@@ -34,6 +40,11 @@ class Chef
         end
       end
 
+      def load_current_resource
+        new_resource.public_ip_resource.location(new_resource.location)
+        new_resource.public_ip_resource.resource_group(new_resource.resource_group) unless new_resource.public_ip_resource.resource_group
+      end
+ 
       def does_network_interface_exist
         begin
           network_interface_list = network_management_client.network_interfaces.list(new_resource.resource_group).value!
@@ -81,9 +92,11 @@ class Chef
         subnet_ref = get_subnet_ref(new_resource.virtual_network_resource_group,
                                     new_resource.virtual_network, new_resource.subnet)
 
+        public_ip_ref = get_public_ip(new_resource.public_ip_resource.resource_group, new_resource.public_ip_resource.name)  
+
         network_interface.properties = create_network_interface_properties(
           new_resource.name, new_resource.private_ip_allocation_method,
-          new_resource.private_ip_address, subnet_ref, new_resource.dns_servers)
+          new_resource.private_ip_address, subnet_ref, new_resource.dns_servers, public_ip_ref)
 
         network_interface
       end
@@ -97,12 +110,12 @@ class Chef
         network_interface
       end
 
-      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref, dns_servers)
+      def create_network_interface_properties(interface_name, private_ip_type, private_ip, subnet_ref, dns_servers, public_ip_ref)
         nic_properties = Azure::ARM::Network::Models::NetworkInterfacePropertiesFormat.new
 
         nic_properties.dns_settings = create_network_interface_dns_settings(dns_servers) if dns_servers
 
-        ip_config =  create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref)
+        ip_config =  create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref, public_ip_ref)
         nic_properties.ip_configurations = [ip_config]
 
         nic_properties
@@ -114,7 +127,7 @@ class Chef
         dns_settings
       end
 
-      def create_network_interface_ip_configuration(ipconfig_name, private_ip_type, private_ip, subnet_ref)
+      def create_network_interface_ip_configuration(ipconfig_name, private_ip_type, private_ip, subnet_ref, public_ip_ref)
         ip_config = Azure::ARM::Network::Models::NetworkInterfaceIpConfiguration.new
         ip_config.name = ipconfig_name
         ip_config.properties = Azure::ARM::Network::Models::NetworkInterfaceIpConfigurationPropertiesFormat.new
@@ -125,8 +138,27 @@ class Chef
           ip_config.properties.subnet = Azure::ARM::Network::Models::Subnet.new
           ip_config.properties.subnet.id = subnet_ref
         end
+
+        if public_ip_ref
+          ip_config.properties.public_ipaddress = Azure::ARM::Network::Models::PublicIpAddress.new
+          ip_config.properties.public_ipaddress.id =  public_ip_ref
+        end
+
         ip_config
       end
+
+      def get_public_ip(resource_group, resource_name)  
+        begin
+          result = network_management_client.public_ip_addresses.get(resource_group, resource_name).value!
+          public_ip = result.body
+        rescue MsRestAzure::AzureOperationError => operation_error
+          error = operation_error.body['error']
+          Chef::Log.error error
+          raise operation_error
+        end
+
+        public_ip.id
+      end  
 
       def get_subnet_ref(resource_group_name, vnet_name, subnet_name)
         [resource_group_name, vnet_name, subnet_name].each do |v|

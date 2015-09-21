@@ -3,9 +3,13 @@ require 'chef/provisioning/azurerm/azure_resource'
 class Chef
   class Resource
     class AzureNetworkInterface < Chef::Provisioning::AzureRM::AzureResource
+
       resource_name :azure_network_interface
+
       actions :create, :destroy, :nothing
+
       default_action :create
+
       attribute :name, kind_of: String, name_attribute: true, regex: /^[\w\-\(\)\.]{0,80}$+(?<!\.)$/i
       attribute :resource_group, kind_of: String
       attribute :location, kind_of: String, default: 'westus'
@@ -23,6 +27,16 @@ class Chef
           return true
         end
       }
+        
+      #attribute :sub_resource, kind_of: Chef::Resource::AzureVirtualNetwork
+      attr_reader :public_ip_resource
+ 
+      def public_ip(resource_name, &resource_block) 
+        @public_ip_resource =  Chef::Resource::AzurePublicIPAddress.new(resource_name.to_s, run_context)
+        @public_ip_resource.action :nothing
+        @public_ip_resource.instance_eval(&resource_block)
+      end
+
     end
   end
 end
