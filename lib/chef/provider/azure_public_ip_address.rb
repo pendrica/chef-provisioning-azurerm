@@ -37,7 +37,7 @@ class Chef
         public_ip_address = Azure::ARM::Network::Models::PublicIpAddress.new
         public_ip_address.location = new_resource.location
         public_ip_address_properties = Azure::ARM::Network::Models::PublicIpAddressPropertiesFormat.new
-        public_ip_address_properties.public_ipallocation_method = new_resource.public_ipallocation_method
+        public_ip_address_properties.public_ipallocation_method = new_resource.public_ip_allocation_method
         # TODO: Deal with Static allocation, i.e.:
         # public_ip_address_properties.dns_settings = [DNSSettings type]
         # public_ip_address_properties.idle_timeout_in_minutes = new_resource.idle_timeout_in_minutes
