@@ -48,32 +48,16 @@ class Chef
         end
 
         public_ip_address.properties = public_ip_address_properties
-  
+
         try_azure_operation('creating or updating public ip') do
           network_management_client.public_ip_addresses.create_or_update(new_resource.resource_group, new_resource.name, public_ip_address).value!
         end
-        #begin
-        #  result = network_management_client.public_ip_addresses.create_or_update(new_resource.resource_group, new_resource.name, public_ip_address).value!
-        #  Chef::Log.debug(result)
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error "#{error}"
-        #  raise operation_error
-        #end
       end
 
       def destroy_public_ip_address
         try_azure_operation('destroyinh public ip') do
           network_management_client.public_ip_addresses.delete(new_resource.resource_group, new_resource.name).value!
         end
-        #begin
-        #  result = network_management_client.public_ip_addresses.delete(new_resource.resource_group, new_resource.name).value!
-        #  Chef::Log.debug(result)
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error "#{error}"
-        #  raise operation_error
-        #end
       end
 
       def create_public_ip_dns_settings(domain_name_label, reverse_fqdn)

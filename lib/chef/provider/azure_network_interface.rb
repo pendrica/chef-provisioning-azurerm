@@ -42,13 +42,6 @@ class Chef
       end
 
       def does_network_interface_exist
-        #begin
-        #  network_interface_list = network_management_client.network_interfaces.list(new_resource.resource_group).value!
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error "ERROR enumerating Network interfaces:  #{error}"
-        #  raise operation_error
-        #end
         network_interface_list = try_azure_operation('enumerating network interfaces') do
           network_management_client.network_interfaces.list(new_resource.resource_group).value!
         end
@@ -61,33 +54,17 @@ class Chef
 
       def destroy_network_interface
         action_handler.report_progress 'Destroying network interface...'
-        result = try_azure_operation "destroying network interface" do
+        try_azure_operation 'destroying network interface' do
           network_management_client.network_interfaces.delete(new_resource.resource_group, new_resource.name).value!
         end
-        #begin
-        #  result = network_management_client.network_interfaces.delete(new_resource.resource_group, new_resource.name).value!
-        #  Chef::Log.debug(result)
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error "ERROR destroying network interface:  #{error}"
-        #  raise operation_error
-        #end
       end
 
       def create_or_update_network_interface
         network_interface_params = create_network_interface_params
         action_handler.report_progress 'Creating or Updating network interface...'
-        result = try_azure_operation "Creating or Updating network interface" do
+        try_azure_operation 'Creating or Updating network interface' do
           network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface_params).value!
         end
-        #begin
-        #  result = network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface_params).value!
-        #  Chef::Log.debug(result)
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error "ERROR creating or updating network interface: #{error}"
-        #  raise operation_error
-        #end
       end
 
       def create_network_interface_params
@@ -153,14 +130,6 @@ class Chef
       end
 
       def get_public_ip(resource_group, resource_name)
-        #begin
-        #  result = network_management_client.public_ip_addresses.get(resource_group, resource_name).value!
-        #  public_ip = result.body
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error error
-        #  raise operation_error
-        #end
         result =  try_azure_operation('getting public IP') do
           network_management_client.public_ip_addresses.get(resource_group, resource_name).value!
         end
@@ -173,16 +142,6 @@ class Chef
         [resource_group_name, vnet_name, subnet_name].each do |v|
           return nil if v.nil? || v.empty?
         end
-
-        #begin
-        #  promise =  network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name)
-        #  result = promise.value!
-        #  subnet = result.body
-        #rescue MsRestAzure::AzureOperationError => operation_error
-        #  error = operation_error.body['error']
-        #  Chef::Log.error error
-        #  raise operation_error
-        #end
 
         result =  try_azure_operation('getting subnet') do
           network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name).value!
