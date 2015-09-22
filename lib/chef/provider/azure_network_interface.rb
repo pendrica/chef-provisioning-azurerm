@@ -32,8 +32,8 @@ class Chef
       action :destroy do
         converge_by("destroy network interface: #{new_resource.name}") do
           if does_network_interface_exist
-            new_resource.public_ip_resource.run_action(:destroy)
             destroy_network_interface
+            new_resource.public_ip_resource.run_action(:destroy)
           else
             action_handler.report_progress "network interface #{new_resource.name} was not found."
           end
