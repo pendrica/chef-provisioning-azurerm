@@ -11,7 +11,8 @@ class Chef
       attribute :tags, kind_of: Hash
       attribute :resource_group, kind_of: String
       attribute :public_ip_allocation_method, kind_of: String, equal_to: %w(dynamic static), default: 'dynamic'
-      attribute :dns_settings, kind_of: Hash
+      attribute :domain_name_label, kind_of: String
+      attribute :reverse_fqdn, kind_of: String
       attribute :idle_timeout_in_minutes, kind_of: Integer
     end
   end

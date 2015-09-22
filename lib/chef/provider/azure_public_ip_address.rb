@@ -36,11 +36,16 @@ class Chef
       def create_public_ip_address
         public_ip_address = Azure::ARM::Network::Models::PublicIpAddress.new
         public_ip_address.location = new_resource.location
+        public_ip_address.tags = new_resource.tags
+
         public_ip_address_properties = Azure::ARM::Network::Models::PublicIpAddressPropertiesFormat.new
         public_ip_address_properties.public_ipallocation_method = new_resource.public_ip_allocation_method
-        # TODO: Deal with Static allocation, i.e.:
-        # public_ip_address_properties.dns_settings = [DNSSettings type]
-        # public_ip_address_properties.idle_timeout_in_minutes = new_resource.idle_timeout_in_minutes
+        public_ip_address_properties.idle_timeout_in_minutes = new_resource.idle_timeout_in_minutes
+
+        if new_resource.domain_name_label || new_resource.reverse_fqdn 
+          public_ip_address_properties.dns_settings = create_public_ip_dns_settings(new_resource.domain_name_label,new_resource.reverse_fqdn)
+        end 
+
         public_ip_address.properties = public_ip_address_properties
       
         begin
@@ -62,6 +67,15 @@ class Chef
           Chef::Log.error "#{error}"
           raise operation_error
         end
+      end
+
+
+      def create_public_ip_dns_settings(domain_name_label, reverse_fqdn)
+        dns_settings = Azure::ARM::Network::Models::PublicIpAddressDnsSettings.new
+        dns_settings.domain_name_label = domain_name_label
+        dns_settings.reverse_fqdn = reverse_fqdn
+
+        dns_settings
       end
     end
   end
