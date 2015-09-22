@@ -23,5 +23,4 @@ describe Chef::Resource::AzurePublicIPAddress do
   # it 'defaults to :create action' do
   #   expect(resource.new('resource-group').action).to eq([:create])
   # end
-  
 end

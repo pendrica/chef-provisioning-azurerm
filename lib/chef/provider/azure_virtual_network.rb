@@ -35,7 +35,10 @@ class Chef
       end
 
       def does_virtual_network_exist
-        virtual_network_list = network_management_client.virtual_networks.list(new_resource.resource_group).value!
+        virtual_network_list = try_azure_operation('listing virtual networks') do
+          network_management_client.virtual_networks.list(new_resource.resource_group).value!
+        end
+        #virtual_network_list = network_management_client.virtual_networks.list(new_resource.resource_group).value!
         virtual_network_list.body.value.each do |virtual_network|
           return true if virtual_network.name == new_resource.name
         end
@@ -44,14 +47,17 @@ class Chef
 
       def destroy_virtual_network
         action_handler.report_progress 'Destroying Virtual Network...'
-        begin
+        try_azure_operation('destroying virtual network') do
           result = network_management_client.virtual_networks.delete(new_resource.resource_group, new_resource.name).value!
-          Chef::Log.debug(result)
-        rescue MsRestAzure::AzureOperationError => operation_error
-          error = operation_error.body['error']
-          Chef::Log.error "ERROR destroying Virtual Network:  #{error}"
-          raise operation_error
         end
+        #begin
+        #  result = network_management_client.virtual_networks.delete(new_resource.resource_group, new_resource.name).value!
+        #  Chef::Log.debug(result)
+        #rescue MsRestAzure::AzureOperationError => operation_error
+        #  error = operation_error.body['error']
+        #  Chef::Log.error "ERROR destroying Virtual Network:  #{error}"
+        #  raise operation_error
+        #end
       end
 
       def create_or_update_virtual_network
@@ -64,14 +70,18 @@ class Chef
           new_resource.address_prefixes, new_resource.subnets, new_resource.dns_servers)
 
         action_handler.report_progress 'Creating or Updating Virtual Network...'
-        begin
-          result = network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
-          Chef::Log.debug(result)
-        rescue MsRestAzure::AzureOperationError => operation_error
-          error = operation_error.body['error']
-          Chef::Log.error "ERROR creating or updating Virtual Network: #{error}"
-          raise operation_error
+
+        try_azure_operation('creating or updating network interface') do
+          network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
         end
+        #begin
+        #  result = network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
+        #  Chef::Log.debug(result)
+        #rescue MsRestAzure::AzureOperationError => operation_error
+        #  error = operation_error.body['error']
+        #  Chef::Log.error "ERROR creating or updating Virtual Network: #{error}"
+        #  raise operation_error
+        #end
       end
 
       def create_virtual_network_properties(address_prefixes, subnets, dns_servers)

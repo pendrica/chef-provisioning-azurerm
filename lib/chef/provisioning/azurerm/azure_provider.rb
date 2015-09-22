@@ -39,6 +39,18 @@ class Chef
           client.subscription_id = new_resource.subscription_id
           client
         end
+
+        def try_azure_operation(description)
+          begin
+            result = yield
+          rescue MsRestAzure::AzureOperationError => operation_error
+            error = operation_error.body['error']
+            Chef::Log.error "ERROR #{description} - #{error}"
+            raise operation_error
+          end
+
+          result
+        end
       end
     end
   end
