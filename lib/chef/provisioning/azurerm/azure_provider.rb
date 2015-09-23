@@ -40,7 +40,7 @@ class Chef
           client
         end
 
-        def try_azure_operation(description, silently_continue_on_error=false)
+        def try_azure_operation(description, silently_continue_on_error = false)
           begin
             result = yield
           rescue MsRestAzure::AzureOperationError => operation_error

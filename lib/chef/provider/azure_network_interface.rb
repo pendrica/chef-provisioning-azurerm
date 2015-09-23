@@ -14,12 +14,12 @@ class Chef
         if network_interface_exists
           converge_by("update network interface #{new_resource.name}") do
             # currently, we let ARM manage the idempotence, so crete and update are the same
-            new_resource.public_ip_resource.run_action(:create)
+            new_resource.public_ip_resource.run_action(:create) if new_resource.public_ip_resource
             create_or_update_network_interface # are create and update different (and should they be??)
           end
         else
           converge_by("create network interface #{new_resource.name}") do
-            new_resource.public_ip_resource.run_action(:create)
+            new_resource.public_ip_resource.run_action(:create) if new_resource.public_ip_resource
             create_or_update_network_interface
           end
         end
@@ -29,7 +29,7 @@ class Chef
         converge_by("destroy network interface: #{new_resource.name}") do
           if does_network_interface_exist
             destroy_network_interface
-            new_resource.public_ip_resource.run_action(:destroy)
+            new_resource.public_ip_resource.run_action(:destroy) if new_resource.public_ip_resource
           else
             action_handler.report_progress "network interface #{new_resource.name} was not found."
           end
@@ -37,8 +37,10 @@ class Chef
       end
 
       def load_current_resource
-        new_resource.public_ip_resource.location(new_resource.location)
-        new_resource.public_ip_resource.resource_group(new_resource.resource_group) unless new_resource.public_ip_resource.resource_group
+        if new_resource.public_ip_resource
+          new_resource.public_ip_resource.location(new_resource.location)
+          new_resource.public_ip_resource.resource_group(new_resource.resource_group) unless new_resource.public_ip_resource.resource_group
+        end
       end
 
       def does_network_interface_exist
@@ -74,7 +76,9 @@ class Chef
         subnet_ref = get_subnet_ref(new_resource.virtual_network_resource_group,
                                     new_resource.virtual_network, new_resource.subnet)
 
-        public_ip_ref = get_public_ip(new_resource.public_ip_resource.resource_group, new_resource.public_ip_resource.name)
+        if new_resource.public_ip_resource
+          public_ip_ref = get_public_ip(new_resource.public_ip_resource.resource_group, new_resource.public_ip_resource.name)
+        end
 
         network_interface.properties = create_network_interface_properties(
           new_resource.name, new_resource.private_ip_allocation_method,
