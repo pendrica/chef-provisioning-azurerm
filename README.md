@@ -61,14 +61,14 @@ The following resources are provided:
 - azure_resource_template
 - azure_storage_account
 - azure_virtual_network
+- azure_network_interface
+- azure_public_ip_address
 
 The following resources are planned (note: these resources may be renamed as they are implemented):
 
 - azure_availability_set
 - azure_load_balancer
-- azure_network_interface
 - azure_network_security_group
-- azure_public_ip_address
 - azure_virtual_machine
 - PaaS resources such as TrafficManager, SQL Server etc.
 
@@ -176,6 +176,48 @@ azure_virtual_network 'myvnet' do
        owner: 'jsmyth'  
 end
 
+
+```
+
+## Example Recipe 4 - deployment of Network Interface
+This example creates a network interface named mynic2 on  the 'web' subnet of a virtual network named 'myvnet'.  
+
+### example4.rb
+
+```ruby
+azure_network_interface 'mynic2' do
+  action :create
+  resource_group 'pendrica-demo'
+  location 'West US'
+  virtual_network 'myvnet'
+  subnet 'web' 
+end
+```
+
+## Example Recipe 5 - deployment of Network Interface with a private static address and a public IP
+This example creates a network interface named mynic on the 'web' subnet of a virtual network named 'myvnet'.  This interface
+has a statically assigned IP address and dns servers, as well as a dynamically assigned Public IP address.
+
+### example5.rb
+
+```ruby
+azure_network_interface 'mynic' do
+  action :create
+  resource_group 'pendrica-demo'
+  location 'West US'
+  virtual_network 'myvnet'
+  subnet 'web' 
+  private_ip_allocation_method 'static'
+  private_ip_address '10.123.123.250'
+  dns_servers ['10.123.123.5', '10.123.123.6']
+  public_ip 'mynic-pip' do
+    public_ip_allocation_method 'dynamic'
+    domain_name_label 'mydnsname'
+    idle_timeout_in_minutes 15
+    tags environment: 'test', 
+        owner: 'jsmyth'  
+  end
+end
 
 ```
 

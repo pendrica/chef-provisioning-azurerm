@@ -10,7 +10,7 @@ require 'azure_mgmt_network'
 Chef::Log.info("chef-provisioning-azurerm #{Chef::Provisioning::AzureRM::VERSION}")
 Chef::Log.info("chef-provisioning #{Chef::Provisioning::VERSION}")
 
-resources = %w(resource_group resource_template storage_account virtual_network)
+resources = %w(resource_group resource_template storage_account virtual_network network_interface public_ip_address)
 resources.each do |r|
   require "chef/resource/azure_#{r}"
   require "chef/provider/azure_#{r}"
