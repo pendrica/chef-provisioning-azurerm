@@ -1,5 +1,10 @@
 # chef-provisioning-azurerm Changelog
 
+## [0.3.2] - 2015-10-07
+### Changed
+- References to Azure SDK updated, supports Linux
+- Adding more resources
+
 ## [0.3.1] - 2015-09-05
 ### Changed
 - :destroy action on azure_resource_group now correctly detects existence of resource group before attempting deletion

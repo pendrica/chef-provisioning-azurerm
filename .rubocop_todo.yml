@@ -22,3 +22,10 @@ Metrics/MethodLength:
 # Offense count: 11
 Style/Documentation:
   Enabled: false
+
+Style/GuardClause: 
+  Enabled: false
+  
+Metrics/ParameterLists: 
+  Enabled: false
+  
