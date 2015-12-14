@@ -52,7 +52,6 @@ Note that the environment variables, if set, take preference over the values in 
 Unlike a fully-featured **chef-provisioning** driver that fully utilises the **machine**, **machine_batch**, **machine_image** and **load_balancer** resources, the **chef-provisioning-azurerm** driver offers a lightweight way to interact with resources and providers in the Azure Resource Manager framework directly.
 
 To work around the issue of storing chef-provisioning driver info in the Chef server:  
-- Any Azure Resource Manager (ARM) templates sent for deployment that contain a resource of type 'Microsoft.Compute/virtualMachine' or 'Microsoft.ClassicCompute/virtualMachine' will automatically have the Chef VM extension added (unless overridden with **install_vm_extension: false**)
 - The Chef VM extension will automatically be configured to point at the same Chef server as the provisioning node.  This can be overridden in a recipe by using the following line: ```with_chef_server 'http://your.chef.server.url/yourorg'```
 
 The following resources are provided: 
