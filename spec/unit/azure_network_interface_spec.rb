@@ -21,7 +21,7 @@ describe Chef::Resource::AzureNetworkInterface do
   # end
 
   it 'raises an error when resource group is longer than 80 characters long' do
-    eighty_one_character_name = 81.times { 'n' }
+    eighty_one_character_name = 'n' * 81
     expect { resource.new(eighty_one_character_name).name }.to raise_error(Chef::Exceptions::ValidationFailed)
   end
 
