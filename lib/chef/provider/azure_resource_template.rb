@@ -56,7 +56,7 @@ class Chef
         <<-EOH
           {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(#{machine_name.delete('[]')},'/', 'chefExtension')]",
+            "name": "[concat('#{machine_name.delete('[]')}','/', 'chefExtension')]",
             "apiVersion": "2015-05-01-preview",
             "location": "#{location}",
             "dependsOn": [
