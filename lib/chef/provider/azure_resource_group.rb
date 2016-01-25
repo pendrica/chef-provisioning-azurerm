@@ -11,11 +11,16 @@ class Chef
 
       action :create do
         converge_by("create or update Resource Group #{new_resource.name}") do
-          resource_group = Azure::ARM::Resources::Models::ResourceGroup.new
-          resource_group.location = new_resource.location
-          resource_group.tags = new_resource.tags
-          result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
-          Chef::Log.debug("result: #{result.body.inspect}")
+          begin
+            resource_group = Azure::ARM::Resources::Models::ResourceGroup.new
+            resource_group.location = new_resource.location
+            resource_group.tags = new_resource.tags
+            result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
+            Chef::Log.debug("result: #{result.body.inspect}")
+          rescue ::MsRestAzure::AzureOperationError => operation_error
+            Chef::Log.error operation_error.body['error']
+            raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+          end
         end
       end
 

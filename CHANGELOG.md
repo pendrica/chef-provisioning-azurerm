@@ -1,5 +1,9 @@
 # chef-provisioning-azurerm Changelog
 
+## [0.3.3] - 2016-01-25
+- Raise AzureOperationError into log (@stuartpreston) 
+- Fix#6 VM extension JSON not formatted correctly (@andrewelizondo)
+
 ## [0.3.2] - 2015-10-07
 ### Changed
 - References to Azure SDK updated, supports Linux
