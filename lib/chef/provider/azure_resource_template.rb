@@ -11,10 +11,15 @@ class Chef
 
       action :deploy do
         converge_by("deploy or re-deploy Resource Manager template '#{new_resource.name}'") do
-          result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment).value!
-          action_handler.report_progress "Result: #{result.body.properties.provisioning_state}"
-          Chef::Log.debug("result: #{result.body.inspect}")
-          follow_deployment_until_end_state
+          begin
+            result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment).value!
+            action_handler.report_progress "Result: #{result.body.properties.provisioning_state}"
+            Chef::Log.debug("result: #{result.body.inspect}")
+            follow_deployment_until_end_state
+          rescue ::MsRestAzure::AzureOperationError => operation_error
+            Chef::Log.error operation_error.body['error']
+            fail "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+          end
         end
       end
 
