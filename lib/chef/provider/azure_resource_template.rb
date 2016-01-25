@@ -58,10 +58,11 @@ class Chef
         chef_server_url = Chef::Config[:chef_server_url]
         validation_client_name = Chef::Config[:validation_client_name]
         validation_key_content = ::File.read(Chef::Config[:validation_key])
+        machine_name = "\'#{machine_name}\'" unless machine_name[0] == '['
         <<-EOH
           {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat('#{machine_name.delete('[]')}','/', 'chefExtension')]",
+            "name": "[concat(#{machine_name.delete('[]')},'/', 'chefExtension')]",
             "apiVersion": "2015-05-01-preview",
             "location": "#{location}",
             "dependsOn": [
