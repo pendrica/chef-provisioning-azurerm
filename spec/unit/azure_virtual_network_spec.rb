@@ -48,7 +48,7 @@ describe Chef::Resource::AzureVirtualNetwork do
 
   it 'correctly sets subnets when properly formatted' do
     my_vnet_resource = resource.new('virtualnetwork')
-    expect(my_vnet_resource.subnets([{ name: 'web', address_prefix: '192.168.0.0/24' }, { name: 'db', address_prefix: '10.0.0.0/16' }])).to contain_exactly({ name: 'web', address_prefix: '192.168.0.0/24' },  name: 'db', address_prefix: '10.0.0.0/16')
+    expect(my_vnet_resource.subnets([{ name: 'web', address_prefix: '192.168.0.0/24' }, { name: 'db', address_prefix: '10.0.0.0/16' }])).to contain_exactly({ name: 'web', address_prefix: '192.168.0.0/24' }, name: 'db', address_prefix: '10.0.0.0/16')
   end
 
   it 'raises an error when subnets dont contain :name and :address_prefix' do

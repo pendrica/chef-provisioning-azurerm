@@ -18,7 +18,7 @@ class Chef
             follow_deployment_until_end_state
           rescue ::MsRestAzure::AzureOperationError => operation_error
             Chef::Log.error operation_error.body['error']
-            fail "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+            raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
           end
         end
       end

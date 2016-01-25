@@ -101,7 +101,7 @@ class Chef
 
         nic_properties.dns_settings = create_network_interface_dns_settings(dns_servers) if dns_servers
 
-        ip_config =  create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref, public_ip_ref)
+        ip_config = create_network_interface_ip_configuration("#{interface_name}-ipconfig", private_ip_type, private_ip, subnet_ref, public_ip_ref)
         nic_properties.ip_configurations = [ip_config]
 
         nic_properties
@@ -117,7 +117,7 @@ class Chef
         ip_config = Azure::ARM::Network::Models::NetworkInterfaceIpConfiguration.new
         ip_config.name = ipconfig_name
         ip_config.properties = Azure::ARM::Network::Models::NetworkInterfaceIpConfigurationPropertiesFormat.new
-        ip_config.properties.private_ipallocation_method = private_ip_type if  private_ip_type
+        ip_config.properties.private_ipallocation_method = private_ip_type if private_ip_type
         ip_config.properties.private_ipaddress = private_ip if private_ip
 
         if subnet_ref
@@ -127,14 +127,14 @@ class Chef
 
         if public_ip_ref
           ip_config.properties.public_ipaddress = Azure::ARM::Network::Models::PublicIpAddress.new
-          ip_config.properties.public_ipaddress.id =  public_ip_ref
+          ip_config.properties.public_ipaddress.id = public_ip_ref
         end
 
         ip_config
       end
 
       def get_public_ip(resource_group, resource_name)
-        result =  try_azure_operation('getting public IP') do
+        result = try_azure_operation('getting public IP') do
           network_management_client.public_ip_addresses.get(resource_group, resource_name).value!
         end
 
@@ -147,7 +147,7 @@ class Chef
           return nil if v.nil? || v.empty?
         end
 
-        result =  try_azure_operation('getting subnet') do
+        result = try_azure_operation('getting subnet') do
           network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name).value!
         end
         subnet = result.body

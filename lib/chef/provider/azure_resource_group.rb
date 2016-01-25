@@ -19,7 +19,7 @@ class Chef
             Chef::Log.debug("result: #{result.body.inspect}")
           rescue ::MsRestAzure::AzureOperationError => operation_error
             Chef::Log.error operation_error.body['error']
-            fail "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+            raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
           end
         end
       end
