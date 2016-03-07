@@ -2,9 +2,7 @@
 
 ```chef-provisioning-azurerm``` is a driver for [chef-provisioning](https://github.com/chef/chef-provisioning) that allows Microsoft Azure resources to be provisioned by Chef. This driver uses the new Microsoft Azure Resource Management REST API via the [azure-sdk-for-ruby](https://github.com/azure/azure-sdk-for-ruby).
 
-**current status: prototype/experimental - use at own risk!**
-
-At the moment, the primary use case is to provide a way to deploy Azure Resource Manager templates using Chef as well as provide an automatic means to install and register the Chef client on these machine via the use of the Chef VM Extensions for Azure.
+The driver provides a way to deploy Azure Resource Manager templates using Chef as well as provide an automatic means to install and register the Chef client on these machine via the use of the Chef VM Extensions for Azure.
 
 [![Build status](https://travis-ci.org/pendrica/chef-provisioning-azurerm.svg?branch=master)](https://travis-ci.org/pendrica/chef-provisioning-azurerm) [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azurerm.svg)](http://badge.fury.io/rb/chef-provisioning-azurerm) 
 

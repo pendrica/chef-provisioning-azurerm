@@ -1,4 +1,6 @@
 # chef-provisioning-azurerm Changelog
+## [0.3.4] - 2016-03-07
+- Pin driver at known versions of ms_rest_azure to fix a forward compatibility issue (@stuartpreston)
 
 ## [0.3.3] - 2016-01-25
 - Raise AzureOperationError into log (@stuartpreston) 
