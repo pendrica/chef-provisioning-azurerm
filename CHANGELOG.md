@@ -1,4 +1,7 @@
 # chef-provisioning-azurerm Changelog
+## [0.3.5] - 2016-05-10
+- Removing gem dependency on inifile, assume chef-provisioning has this covered (@stuartpreston)
+
 ## [0.3.4] - 2016-03-07
 - Pin driver at known versions of ms_rest_azure to fix a forward compatibility issue (@stuartpreston)
 
