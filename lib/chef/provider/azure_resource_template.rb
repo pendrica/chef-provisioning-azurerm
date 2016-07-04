@@ -58,6 +58,7 @@ class Chef
         chef_server_url = Chef::Config[:chef_server_url]
         validation_client_name = Chef::Config[:validation_client_name]
         validation_key_content = ::File.read(Chef::Config[:validation_key])
+        chef_environment = new_resource.chef_extension[:environment].empty? ? '_default': new_resource.chef_extension[:environment]
         machine_name = "\'#{machine_name}\'" unless machine_name[0] == '['
         <<-EOH
           {
@@ -76,7 +77,8 @@ class Chef
                 "bootstrap_options": {
                   "chef_node_name" : "[concat(#{machine_name.delete('[]')},'.','#{new_resource.resource_group}')]",
                   "chef_server_url" : "#{chef_server_url}",
-                  "validation_client_name" : "#{validation_client_name}"
+                  "validation_client_name" : "#{validation_client_name}",
+                  "environment" : "#{chef_environment}"
                 },
                 "runlist": "#{new_resource.chef_extension[:runlist]}"
               },
