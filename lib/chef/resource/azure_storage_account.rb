@@ -11,9 +11,9 @@ class Chef
       attribute :name, kind_of: String, name_attribute: true, regex: /^[\w]{3,24}$/i
       attribute :resource_group, kind_of: String
       attribute :location, kind_of: String, default: 'westus'
-      attribute :tags, kind_of: Hash
+      attribute :tags, kind_of: Hash, default: {}
       attribute :account_type, kind_of: String, equal_to: %w(Standard_LRS Standard_ZRS Standard_GRS Standard_RAGRS Premium_LRS), default: 'Standard_LRS'
-      attribute :custom_domain, kind_of: String
+      attribute :custom_domain, kind_of: String, default: ''
     end
   end
 end

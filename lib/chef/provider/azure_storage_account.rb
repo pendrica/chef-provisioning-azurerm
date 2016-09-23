@@ -86,7 +86,9 @@ class Chef
       def update_storage_account_custom_domain
         storage_account = Azure::ARM::Storage::Models::StorageAccountUpdateParameters.new
         storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
-        storage_account.properties.custom_domain = new_resource.custom_domain
+        custom_domain = Azure::ARM::Storage::Models::CustomDomain.new
+        custom_domain.name = new_resource.custom_domain
+        storage_account.properties.custom_domain = custom_domain
         action_handler.report_progress 'updating Custom Domain'
         result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
         Chef::Log.debug(result)
