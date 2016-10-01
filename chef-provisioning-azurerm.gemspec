@@ -18,14 +18,11 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'chef'
   spec.add_dependency 'chef-provisioning'
-  spec.add_dependency 'json'
-  spec.add_dependency 'azure_mgmt_resources', '0.1.1'
-  spec.add_dependency 'azure_mgmt_storage', '0.1.1'
-  spec.add_dependency 'azure_mgmt_compute', '0.1.1'
-  spec.add_dependency 'azure_mgmt_network', '0.1.1'
-  spec.add_dependency 'ms_rest', '0.1.2'
-  spec.add_dependency 'ms_rest_azure', '0.1.2'
+  spec.add_dependency 'azure_mgmt_resources', '~> 0.5', '>= 0.5.0'
+  spec.add_dependency 'azure_mgmt_storage', '~> 0.5', '>= 0.5.0'
+  spec.add_dependency 'azure_mgmt_compute', '~> 0.5', '>= 0.5.0'
+  spec.add_dependency 'azure_mgmt_network', '~> 0.5', '>= 0.5.0'
 
-  spec.add_development_dependency 'bundler', '~> 1.7'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'rake'
 end

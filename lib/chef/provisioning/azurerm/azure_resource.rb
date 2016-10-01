@@ -11,7 +11,7 @@ class Chef
           @chef_environment = run_context.cheffish.current_environment
           @chef_server = run_context.cheffish.current_chef_server
           @driver = run_context.chef_provisioning.current_driver
-          fail 'No driver set. (has it been set in your recipe using with_driver?)' unless driver
+          Chef::Log.error 'No driver set. (has it been set in your recipe using with_driver?)' unless driver
           @driver_name, @subscription_id = driver.split(':', 2)
         end
 

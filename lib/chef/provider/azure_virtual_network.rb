@@ -36,10 +36,10 @@ class Chef
 
       def does_virtual_network_exist
         virtual_network_list = try_azure_operation('listing virtual networks') do
-          network_management_client.virtual_networks.list(new_resource.resource_group).value!
+          network_management_client.virtual_networks.list(new_resource.resource_group)
         end
 
-        virtual_network_list.body.value.each do |virtual_network|
+        virtual_network_list.value.each do |virtual_network|
           return true if virtual_network.name == new_resource.name
         end
         false
@@ -48,7 +48,7 @@ class Chef
       def destroy_virtual_network
         action_handler.report_progress 'Destroying Virtual Network...'
         try_azure_operation('destroying virtual network') do
-          network_management_client.virtual_networks.delete(new_resource.resource_group, new_resource.name).value!
+          network_management_client.virtual_networks.delete(new_resource.resource_group, new_resource.name)
         end
       end
 
@@ -64,7 +64,7 @@ class Chef
         action_handler.report_progress 'Creating or Updating Virtual Network...'
 
         try_azure_operation('creating or updating network interface') do
-          network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network).value!
+          network_management_client.virtual_networks.create_or_update(new_resource.resource_group, new_resource.name, virtual_network)
         end
       end
 

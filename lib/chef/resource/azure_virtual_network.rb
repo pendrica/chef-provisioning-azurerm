@@ -21,7 +21,7 @@ class Chef
       attribute :subnets, kind_of: Array, callbacks: {
         'should be an array of subnet hashes, each with a :name and :address_prefix' => lambda do |arg_array|
           arg_array.each do |subnet|
-            return false unless ([:name, :address_prefix].sort == subnet.keys.sort)
+            return false unless [:name, :address_prefix].sort == subnet.keys.sort
           end
           return true
         end

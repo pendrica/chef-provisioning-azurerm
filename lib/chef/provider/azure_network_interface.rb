@@ -45,10 +45,10 @@ class Chef
 
       def does_network_interface_exist
         network_interface_list = try_azure_operation('enumerating network interfaces') do
-          network_management_client.network_interfaces.list(new_resource.resource_group).value!
+          network_management_client.network_interfaces.list(new_resource.resource_group)
         end
 
-        network_interface_list.body.value.each do |network_interface|
+        network_interface_list.value.each do |network_interface|
           return true if network_interface.name == new_resource.name
         end
         false
@@ -57,7 +57,7 @@ class Chef
       def destroy_network_interface
         action_handler.report_progress 'Destroying network interface...'
         try_azure_operation 'destroying network interface' do
-          network_management_client.network_interfaces.delete(new_resource.resource_group, new_resource.name).value!
+          network_management_client.network_interfaces.delete(new_resource.resource_group, new_resource.name)
         end
       end
 
@@ -65,7 +65,7 @@ class Chef
         network_interface_params = create_network_interface_params
         action_handler.report_progress 'Creating or Updating network interface...'
         try_azure_operation 'Creating or Updating network interface' do
-          network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface_params).value!
+          network_management_client.network_interfaces.create_or_update(new_resource.resource_group, new_resource.name, network_interface_params)
         end
       end
 
@@ -135,10 +135,10 @@ class Chef
 
       def get_public_ip(resource_group, resource_name)
         result = try_azure_operation('getting public IP') do
-          network_management_client.public_ip_addresses.get(resource_group, resource_name).value!
+          network_management_client.public_ip_addresses.get(resource_group, resource_name)
         end
 
-        public_ip = result.body
+        public_ip = result
         public_ip.id
       end
 
@@ -148,9 +148,9 @@ class Chef
         end
 
         result = try_azure_operation('getting subnet') do
-          network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name).value!
+          network_management_client.subnets.get(resource_group_name, vnet_name, subnet_name)
         end
-        subnet = result.body
+        subnet = result
 
         subnet.id
       end

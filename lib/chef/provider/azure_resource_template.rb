@@ -12,13 +12,13 @@ class Chef
       action :deploy do
         converge_by("deploy or re-deploy Resource Manager template '#{new_resource.name}'") do
           begin
-            result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment).value!
-            action_handler.report_progress "Result: #{result.body.properties.provisioning_state}"
-            Chef::Log.debug("result: #{result.body.inspect}")
+            result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment)
+            action_handler.report_progress "Result: #{result.properties.provisioning_state}"
+            Chef::Log.debug("result: #{result.inspect}")
             follow_deployment_until_end_state
           rescue ::MsRestAzure::AzureOperationError => operation_error
-            Chef::Log.error operation_error.body['error']
-            raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+            Chef::Log.error operation_error.response.body
+            raise operation_error.response.inspect
           end
         end
       end
@@ -33,8 +33,8 @@ class Chef
       end
 
       def template
-        template_src_file = ::File.join(Chef::Config[:chef_repo_path], new_resource.template_source)
-        fail "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
+        template_src_file = new_resource.template_source
+        Chef::Log.error "Cannot find file: #{template_src_file}" unless ::File.file?(template_src_file)
         template = JSON.parse(::IO.read(template_src_file))
         if new_resource.chef_extension
           machines = template['resources'].select { |h| h['type'] == 'Microsoft.Compute/virtualMachines' }
@@ -58,7 +58,7 @@ class Chef
         chef_server_url = Chef::Config[:chef_server_url]
         validation_client_name = Chef::Config[:validation_client_name]
         validation_key_content = ::File.read(Chef::Config[:validation_key])
-        chef_environment = new_resource.chef_extension[:environment].empty? ? '_default': new_resource.chef_extension[:environment]
+        chef_environment = new_resource.chef_extension[:environment].empty? ? '_default' : new_resource.chef_extension[:environment]
         machine_name = "\'#{machine_name}\'" unless machine_name[0] == '['
         <<-EOH
           {
@@ -83,7 +83,7 @@ class Chef
                 "runlist": "#{new_resource.chef_extension[:runlist]}"
               },
               "protectedSettings": {
-                    "validation_key": "#{validation_key_content.gsub("\n", '\\n')}"
+                  "validation_key": "#{validation_key_content.gsub("\n", '\\n')}"
               }
             }
           }
@@ -104,8 +104,8 @@ class Chef
 
       def list_outstanding_deployment_operations
         end_operation_states = 'Failed,Succeeded'
-        deployment_operations = resource_management_client.deployment_operations.list(new_resource.resource_group, new_resource.name).value!
-        deployment_operations.body.value.each do |val|
+        deployment_operations = resource_management_client.deployment_operations.list(new_resource.resource_group, new_resource.name)
+        deployment_operations.value.each do |val|
           resource_provisioning_state = val.properties.provisioning_state
           resource_name = val.properties.target_resource.resource_name
           resource_type = val.properties.target_resource.resource_type
@@ -117,8 +117,8 @@ class Chef
       end
 
       def deployment_state
-        deployments = resource_management_client.deployments.get(new_resource.resource_group, new_resource.name).value!
-        Chef::Log.debug("deployments result: #{deployments.body.inspect}")
+        deployments = resource_management_client.deployments.get(new_resource.resource_group, new_resource.name)
+        Chef::Log.debug("deployments result: #{deployments.inspect}")
         deployments.body.properties.provisioning_state
       end
     end

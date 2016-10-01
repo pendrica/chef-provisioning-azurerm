@@ -17,7 +17,7 @@ class Chef
         end
 
         def allocate_machine(_action_handler, _machine_spec, _machine_options)
-          fail "The Azure Resource Manager does not implement the 'machine' resource. Please refer to documentation."
+          Chef::Log.error "The Azure Resource Manager does not implement the 'machine' resource. Please refer to documentation."
         end
 
         def ready_machine(_action_handler, _machine_spec, _machine_options)
