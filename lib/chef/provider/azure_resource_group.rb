@@ -18,6 +18,7 @@ class Chef
             result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
             Chef::Log.debug("result: #{result.body.inspect}")
           rescue ::MsRestAzure::AzureOperationError => operation_error
+            raise operation_error if operation_error.body.nil?
             Chef::Log.error operation_error.body['error']
             raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
           end
