@@ -1,4 +1,12 @@
 # chef-provisioning-azurerm Changelog
+## [0.4.0] - 2016-10-02
+- BREAKING CHANGE: No longer assume ARM template_source points to a location within the Chef Repo, users must now specify the complete path to the file (@stuartpreston)
+- Removing gem dependency on json, chef-provisioning in attempt to maintain compat with <2.0 versions (@stuartpreston)
+- Align with latest Azure SDK for Ruby (@stuartpreston)
+- AzureOperationError no longer has a body property (@stuartpreston)
+- Add custom_domain property to fix Storage resource (@bgxavier)
+- Chef VM Extension now supports chef_environment property (@andrimarjonsson)
+
 ## [0.3.5] - 2016-05-10
 - Removing gem dependency on inifile, assume chef-provisioning has this covered (@stuartpreston)
 

@@ -33,7 +33,7 @@ class Chef
           storage_account_exists = does_storage_account_exist
           if storage_account_exists
             action_handler.report_progress 'destroying Storage Account'
-            storage_management_client.storage_accounts.delete(new_resource.resource_group, new_resource.name).value!
+            storage_management_client.storage_accounts.delete(new_resource.resource_group, new_resource.name)
           else
             action_handler.report_progress "Storage Account #{new_resource.name} was not found."
           end
@@ -41,8 +41,8 @@ class Chef
       end
 
       def does_storage_account_exist
-        storage_account_list = storage_management_client.storage_accounts.list_by_resource_group(new_resource.resource_group).value!
-        storage_account_list.body.value.each do |storage_account|
+        storage_account_list = storage_management_client.storage_accounts.list_by_resource_group(new_resource.resource_group)
+        storage_account_list.value.each do |storage_account|
           return true if storage_account.name == new_resource.name
         end
         false
@@ -55,7 +55,7 @@ class Chef
         storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesCreateParameters.new
         storage_account.properties.account_type = new_resource.account_type
         action_handler.report_progress 'creating Storage Account'
-        result = storage_management_client.storage_accounts.create(new_resource.resource_group, new_resource.name, storage_account).value!
+        result = storage_management_client.storage_accounts.create(new_resource.resource_group, new_resource.name, storage_account)
         Chef::Log.debug(result)
       end
 
@@ -70,7 +70,7 @@ class Chef
         storage_account.tags = new_resource.tags
         storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
         action_handler.report_progress 'updating Tags'
-        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account)
         Chef::Log.debug(result)
       end
 
@@ -79,7 +79,7 @@ class Chef
         storage_account.properties = Azure::ARM::Storage::Models::StorageAccountPropertiesUpdateParameters.new
         storage_account.properties.account_type = new_resource.account_type
         action_handler.report_progress 'updating Properties'
-        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account)
         Chef::Log.debug(result)
       end
 
@@ -90,7 +90,7 @@ class Chef
         custom_domain.name = new_resource.custom_domain
         storage_account.properties.custom_domain = custom_domain
         action_handler.report_progress 'updating Custom Domain'
-        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account).value!
+        result = storage_management_client.storage_accounts.update(new_resource.resource_group, new_resource.name, storage_account)
         Chef::Log.debug(result)
       end
     end

@@ -4,7 +4,7 @@ class Chef
   module Provisioning
     module AzureRM
       class Credentials
-        CONFIG_PATH = "#{ENV['HOME']}/.azure/credentials"
+        CONFIG_PATH = "#{ENV['HOME']}/.azure/credentials".freeze
 
         def initialize
           config_file = ENV['AZURE_CONFIG_FILE'] || File.expand_path(CONFIG_PATH)

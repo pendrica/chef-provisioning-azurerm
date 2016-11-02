@@ -26,8 +26,8 @@ class Chef
       end
 
       def public_ip_address_exists
-        public_ip_address_list = network_management_client.public_ip_addresses.list(new_resource.resource_group).value!
-        public_ip_address_list.body.value.each do |public_ip_address|
+        public_ip_address_list = network_management_client.public_ip_addresses.list(new_resource.resource_group)
+        public_ip_address_list.value.each do |public_ip_address|
           return true if public_ip_address.name == new_resource.name
         end
 
@@ -50,13 +50,13 @@ class Chef
         public_ip_address.properties = public_ip_address_properties
 
         try_azure_operation('creating or updating public ip') do
-          network_management_client.public_ip_addresses.create_or_update(new_resource.resource_group, new_resource.name, public_ip_address).value!
+          network_management_client.public_ip_addresses.create_or_update(new_resource.resource_group, new_resource.name, public_ip_address)
         end
       end
 
       def destroy_public_ip_address
-        try_azure_operation('destroyinh public ip') do
-          network_management_client.public_ip_addresses.delete(new_resource.resource_group, new_resource.name).value!
+        try_azure_operation('destroying public ip') do
+          network_management_client.public_ip_addresses.delete(new_resource.resource_group, new_resource.name)
         end
       end
 

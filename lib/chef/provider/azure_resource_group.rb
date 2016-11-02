@@ -15,21 +15,21 @@ class Chef
             resource_group = Azure::ARM::Resources::Models::ResourceGroup.new
             resource_group.location = new_resource.location
             resource_group.tags = new_resource.tags
-            result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group).value!
-            Chef::Log.debug("result: #{result.body.inspect}")
+            result = resource_management_client.resource_groups.create_or_update(new_resource.name, resource_group)
+            Chef::Log.debug("result: #{result.inspect}")
           rescue ::MsRestAzure::AzureOperationError => operation_error
-            Chef::Log.error operation_error.body['error']
-            raise "#{operation_error.body['error']['code']}: #{operation_error.body['error']['message']}"
+            Chef::Log.error operation_error.response.body
+            raise operation_error.response.inspect
           end
         end
       end
 
       action :destroy do
         converge_by("destroy Resource Group #{new_resource.name}") do
-          resource_group_exists = resource_management_client.resource_groups.check_existence(new_resource.name).value!
-          if resource_group_exists.body
-            result = resource_management_client.resource_groups.delete(new_resource.name).value!
-            Chef::Log.debug("result: #{result.body.inspect}")
+          resource_group_exists = resource_management_client.resource_groups.check_existence(new_resource.name)
+          if resource_group_exists
+            result = resource_management_client.resource_groups.delete(new_resource.name)
+            Chef::Log.debug("result: #{result.inspect}")
           else
             action_handler.report_progress "Resource Group #{new_resource.name} was not found."
           end
