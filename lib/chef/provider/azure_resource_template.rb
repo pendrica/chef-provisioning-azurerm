@@ -12,9 +12,8 @@ class Chef
       action :deploy do
         converge_by("deploy or re-deploy Resource Manager template '#{new_resource.name}'") do
           begin
-            result = resource_management_client.deployments.create_or_update(new_resource.resource_group, new_resource.name, deployment)
-            action_handler.report_progress "Result: #{result.properties.provisioning_state}"
-            Chef::Log.debug("result: #{result.inspect}")
+            result = resource_management_client.deployments.begin_create_or_update_async(new_resource.resource_group, new_resource.name, deployment).value!
+            Chef::Log.debug("result: #{result.response.body}")
             follow_deployment_until_end_state
           rescue ::MsRestAzure::AzureOperationError => operation_error
             Chef::Log.error operation_error.response.body
@@ -105,10 +104,12 @@ class Chef
       def list_outstanding_deployment_operations
         end_operation_states = 'Failed,Succeeded'
         deployment_operations = resource_management_client.deployment_operations.list(new_resource.resource_group, new_resource.name)
-        deployment_operations.value.each do |val|
+        deployment_operations.each do |val|
           resource_provisioning_state = val.properties.provisioning_state
-          resource_name = val.properties.target_resource.resource_name
-          resource_type = val.properties.target_resource.resource_type
+          unless val.properties.target_resource.nil?
+            resource_name = val.properties.target_resource.resource_name
+            resource_type = val.properties.target_resource.resource_type
+          end
           end_operation_state_reached = end_operation_states.split(',').include?(resource_provisioning_state)
           unless end_operation_state_reached
             action_handler.report_progress "Resource #{resource_type} '#{resource_name}' provisioning status is #{resource_provisioning_state}\n"
@@ -119,7 +120,7 @@ class Chef
       def deployment_state
         deployments = resource_management_client.deployments.get(new_resource.resource_group, new_resource.name)
         Chef::Log.debug("deployments result: #{deployments.inspect}")
-        deployments.body.properties.provisioning_state
+        deployments.properties.provisioning_state
       end
     end
   end
