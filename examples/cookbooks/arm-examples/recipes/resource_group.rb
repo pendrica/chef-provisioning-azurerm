@@ -1,11 +1,11 @@
 #
-# Cookbook Name:: chef-provisioning-azurerm-examples
-# Recipe:: default
+# Cookbook Name:: arm-examples
+# Recipe:: resource_group.rb
 #
 # Copyright (c) 2016 The Authors, All Rights Reserved.
 
 require 'chef/provisioning/azurerm'
-with_driver 'AzureRM:b6e7eee9-e4cd-41ae-8432-03ab624df016'
+with_driver "AzureRM:#{node['chef-provisioning-azurerm']['subscription-id']}"
 
 azure_resource_group 'chef-provisioning_examples_resource_group' do
   location 'West Europe'
