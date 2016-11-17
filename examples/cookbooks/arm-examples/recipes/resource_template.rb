@@ -5,7 +5,7 @@
 # Copyright (c) 2016 The Authors, All Rights Reserved.
 
 require 'chef/provisioning/azurerm'
-with_driver "AzureRM:#{node['chef-provisioning-azurerm']['subscription_id']}"
+with_driver 'AzureRM:b6e7eee9-YOUR-GUID-HERE-03ab624df016'
 
 azure_resource_group 'chef-provisioning_examples_resource_template10' do
   location 'West Europe'
