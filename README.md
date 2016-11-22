@@ -98,7 +98,7 @@ end
 
 azure_resource_template 'my-deployment' do
   resource_group 'pendrica-demo'
-  template_source 'cookbooks/provision/files/default/azure_deploy.json'
+  template_source '#{Chef::Config[:cookbook_path]}/provision/files/default/azure_deploy.json'
   parameters newStorageAccountName: "mystorageaccount01",
              adminUsername: 'stuart',
              adminPassword: 'P2ssw0rd',
