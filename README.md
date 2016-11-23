@@ -107,6 +107,7 @@ azure_resource_template 'my-deployment' do
   chef_extension client_type: 'ChefClient',
                  version: '1210.12',
                  runlist: 'role[webserver]'
+                 environment: '_default'
 end
 ```
 
