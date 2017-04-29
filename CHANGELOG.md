@@ -1,4 +1,8 @@
 # chef-provisioning-azurerm Changelog
+
+## [0.5.0] - 2017-04-29
+- Support for AzureUSGovernment, AzureChina and AzureGermanyCloud environments (@stuartpreston)
+
 ## [0.4.0] - 2016-10-02
 - BREAKING CHANGE: No longer assume ARM template_source points to a location within the Chef Repo, users must now specify the complete path to the file (@stuartpreston)
 - Removing gem dependency on json, chef-provisioning in attempt to maintain compat with <2.0 versions (@stuartpreston)

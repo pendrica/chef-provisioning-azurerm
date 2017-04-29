@@ -13,31 +13,46 @@ class Chef
         end
 
         def resource_management_client
-          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
-          client = Azure::ARM::Resources::ResourceManagementClient.new(credentials)
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id, new_resource.driver_name)
+          client = Azure::ARM::Resources::ResourceManagementClient.new(credentials, resource_manager_endpoint_url(new_resource.driver_name))
           client.subscription_id = new_resource.subscription_id
           client
         end
 
         def storage_management_client
-          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
-          client = Azure::ARM::Storage::StorageManagementClient.new(credentials)
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id, new_resource.driver_name)
+          client = Azure::ARM::Storage::StorageManagementClient.new(credentials, resource_manager_endpoint_url(new_resource.driver_name))
           client.subscription_id = new_resource.subscription_id
           client
         end
 
         def compute_management_client
-          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
-          client = Azure::ARM::Compute::ComputeManagementClient.new(credentials)
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id, new_resource.driver_name)
+          client = Azure::ARM::Compute::ComputeManagementClient.new(credentials, resource_manager_endpoint_url(new_resource.driver_name))
           client.subscription_id = new_resource.subscription_id
           client
         end
 
         def network_management_client
-          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id)
-          client = Azure::ARM::Network::NetworkResourceProviderClient.new(credentials)
+          credentials = Credentials.new.azure_credentials_for_subscription(new_resource.subscription_id, new_resource.driver_name)
+          client = Azure::ARM::Network::NetworkResourceProviderClient.new(credentials, resource_manager_endpoint_url(new_resource.driver_name))
           client.subscription_id = new_resource.subscription_id
           client
+        end
+
+        def resource_manager_endpoint_url(azure_environment)
+          case azure_environment.downcase
+          when 'azureusgovernment'
+            MsRestAzure::AzureEnvironments::AzureUSGovernment.resource_manager_endpoint_url
+          when 'azurechina'
+            MsRestAzure::AzureEnvironments::AzureChina.resource_manager_endpoint_url
+          when 'azuregermancloud'
+            MsRestAzure::AzureEnvironments::AzureGermanCloud.resource_manager_endpoint_url
+          when 'azurerm'
+            MsRestAzure::AzureEnvironments::Azure.resource_manager_endpoint_url
+          when 'azure'
+            MsRestAzure::AzureEnvironments::Azure.resource_manager_endpoint_url
+          end
         end
 
         def try_azure_operation(description, silently_continue_on_error = false)
