@@ -36,7 +36,7 @@ class Chef
           when 'azurechina'
             ::MsRestAzure::ActiveDirectoryServiceSettings.get_azure_china_settings
           when 'azuregermancloud'
-            ::MsRestAzure::ActiveDirectoryServiceSettings.get_azure_germany_settings
+            ::MsRestAzure::ActiveDirectoryServiceSettings.get_azure_german_settings
           when 'azurerm'
             ::MsRestAzure::ActiveDirectoryServiceSettings.get_azure_settings
           when 'azure'

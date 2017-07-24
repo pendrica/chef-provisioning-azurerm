@@ -45,13 +45,13 @@ class Chef
           when 'azureusgovernment'
             MsRestAzure::AzureEnvironments::AzureUSGovernment.resource_manager_endpoint_url
           when 'azurechina'
-            MsRestAzure::AzureEnvironments::AzureChina.resource_manager_endpoint_url
+            MsRestAzure::AzureEnvironments::AzureChinaCloud.resource_manager_endpoint_url
           when 'azuregermancloud'
             MsRestAzure::AzureEnvironments::AzureGermanCloud.resource_manager_endpoint_url
           when 'azurerm'
-            MsRestAzure::AzureEnvironments::Azure.resource_manager_endpoint_url
+            MsRestAzure::AzureEnvironments::AzureCloud.resource_manager_endpoint_url
           when 'azure'
-            MsRestAzure::AzureEnvironments::Azure.resource_manager_endpoint_url
+            MsRestAzure::AzureEnvironments::AzureCloud.resource_manager_endpoint_url
           end
         end
 
