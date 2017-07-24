@@ -103,7 +103,7 @@ azure_resource_template 'my-deployment' do
              windowsOSVersion: '2012-R2-Datacenter'
   chef_extension client_type: 'ChefClient',
                  version: '1210.12',
-                 runlist: 'role[webserver]'
+                 runlist: 'role[webserver]',
                  environment: '_default'
 end
 ```
