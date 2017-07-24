@@ -16,6 +16,7 @@ Gem::Specification.new do |spec|
   spec.files         = Dir['LICENSE.txt', 'README.md', 'CHANGELOG.md', 'lib/**/*']
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'chef'
   spec.add_dependency 'chef-provisioning', '~> 2.0', '< 3.0.0'
   spec.add_dependency 'azure_mgmt_resources', '~> 0.11', '>= 0.11.0'
   spec.add_dependency 'azure_mgmt_storage', '~> 0.11', '>= 0.11.0'
