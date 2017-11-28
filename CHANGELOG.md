@@ -1,5 +1,8 @@
 # chef-provisioning-azurerm Changelog
 
+## [0.6.1] - 2017-11-28
+- Fixing dependencies on Azure SDK (resolves breaking change)
+
 ## [0.6.0] - 2017-07-24
 - Relaxing the Chef dependency to support Chef 12 and 13 (@stuartpreston)
 - Pinning to latest Azure SDK, fixing breaking changes (@stuartpreston)
